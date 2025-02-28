@@ -10,7 +10,7 @@
 | 10:30 - 11:15 | 45m      | Working With Data in Julia                             |
 | 11:15 - 12:30 | 75m      | 🔨 Julia Programming Hands-on                          |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                         |
-| 13:30 - 14:15 | 45m      | PK Modeling in Pumas I                                 |
+| 13:30 - 14:15 | 45m      | PopPK Modeling in Pumas I                                 |
 | 14:15 - 14:30 | 15m      | ☕ Afternoon Break                                      |
 | 14:30 - 15:15 | 45m      | PK Modeling in Pumas II                                |
 | 15:15 - 16:30 | 75m      | 🔨 PK Modeling Workshop                                |
