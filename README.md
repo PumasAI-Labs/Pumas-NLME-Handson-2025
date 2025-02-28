@@ -1,6 +1,6 @@
 # Pumas-NLME-Handson-2025 Workshop Schedule
 
-## Day 1: Julia Fundamentals & Data Handling
+## Day 1: Julia Fundamentals, Data Handling & PopPK Modeling
 
 | Time          | Duration | Activity                                               |
 |---------------|----------|--------------------------------------------------------|
