@@ -43,7 +43,7 @@
 | 13:30 - 14:30 | 60m      | Bayesian Analysis                                      |
 | 14:30 - 14:45 | 15m      | ☕ Afternoon Break                                      |
 | 14:45 - 15:45 | 60m      | Non-Gaussian Random Effects Modeling                   |
-| 15:45 - 16:30 | 45m      | 🔨 Free Hands-on                                       |
+| 15:45 - 16:30 | 45m      | 🔨 Q&A and Wrap-up                                       |
 
 ### Legend
 - 🔨 Hands-on Workshop Sessions
