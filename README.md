@@ -4,46 +4,46 @@
 
 | Time          | Duration | Activity                                               |
 |---------------|----------|--------------------------------------------------------|
-| 08:30 - 09:00 | 30m      | Welcome & Environment Setup                            |
-| 09:00 - 10:15 | 75m      | Introduction to Julia                                  |
-| 10:15 - 10:30 | 15m      | ☕ Morning Break                                        |
-| 10:30 - 11:15 | 45m      | Working With Data in Julia                             |
-| 11:15 - 12:30 | 75m      | 🔨 Julia Programming Hands-on                          |
+| 09:00 - 09:30 | 30m      | Welcome and Environment Setup                          |
+| 09:30 - 10:45 | 75m      | Introduction to Julia                                  |
+| 10:45 - 11:00 | 15m      | ☕ Morning Break                                        |
+| 11:00 - 11:45 | 45m      | Working With Data in Julia                             |
+| 11:45 - 12:30 | 45m      | 🔨 Julia Programming Hands-on                          |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                         |
-| 13:30 - 14:15 | 45m      | PopPK Modeling in Pumas I                                 |
+| 13:30 - 14:15 | 45m      | PopPK Modeling I                                       |
 | 14:15 - 14:30 | 15m      | ☕ Afternoon Break                                      |
-| 14:30 - 15:15 | 45m      | PopPK Modeling in Pumas II                                |
-| 15:15 - 16:30 | 75m      | 🔨 PopPK Modeling Hands-on                                |
+| 14:30 - 15:15 | 45m      | PopPK Modeling II                                     |
+| 15:15 - 16:30 | 75m      | 🔨 PopPK Modeling Hands-on                             |
 
-## Day 2: Simulations & PK/PD Modeling
+## Day 2: Simulations & PopPK/PD Modeling
 
 | Time          | Duration | Activity                                               |
 |---------------|----------|---------------------------------------------------------|
-| 08:30 - 09:15 | 45m      | Uncertainty Estimation and Model Diagnostics in Pumas   |
-| 09:15 - 10:15 | 60m      | 🔨 Uncertainty Estimation and Model Diagnostics Hands-on |
-| 10:15 - 10:30 | 15m      | ☕ Morning Break                                          |
-| 10:30 - 11:15 | 45m      | PK and Exposure Simulation in Pumas                     |
-| 11:15 - 12:30 | 75m      | 🔨 PK and Exposure Simulation in Pumas Hands-on         |
+| 09:00 - 09:45 | 45m      | Uncertainty Estimation and Model Diagnostics            |
+| 09:45 - 10:45 | 60m      | 🔨 Uncertainty Estimation and Model Diagnostics Hands-on |
+| 10:45 - 11:00 | 15m      | ☕ Morning Break                                         |
+| 11:00 - 11:45 | 45m      | PopPK and Exposure Simulation                           |
+| 11:45 - 12:30 | 45m      | 🔨 PopPK and Exposure Simulation Hands-on               |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                          |
-| 13:30 - 14:30 | 60m      | PopPK/PD Modeling in Pumas                                |
-| 14:30 - 14:45 | 15m      | ☕ Afternoon Break                                      |
-| 14:45 - 15:30 | 45m      | PopPK/PD Model Simulation                                 |
-| 15:30 - 16:30 | 60m      | 🔨 PopPK/PD Model Simulation Hands-on                     |
+| 13:30 - 14:15 | 45m      | PopPK/PD Modeling                                       |
+| 14:15 - 14:30 | 15m      | ☕ Afternoon Break                                       |
+| 14:30 - 15:15 | 45m      | PopPK/PD Model Simulation                               |
+| 15:15 - 16:30 | 75m      | 🔨 PopPK/PD Model Simulation Hands-on                   |
 
 ## Day 3: Advanced Modeling & Simulation
 
 | Time          | Duration | Activity                                               |
 |---------------|----------|--------------------------------------------------------|
-| 08:30 - 09:30 | 60m      | Absorption Modeling in Pumas                           |
-| 09:30 - 10:15 | 45m      | 🔨 Absorption Modeling Hands-on                        |
-| 10:15 - 10:30 | 15m      | ☕ Morning Break                                        |
-| 10:30 - 11:30 | 60m      | Discrete Data Models                                   |
-| 11:30 - 12:30 | 60m      | 🔨 Discrete Data Models Hands-on                       |
+| 09:00 - 09:45 | 45m      | Absorption Modeling                                    |
+| 09:45 - 10:45 | 60m      | 🔨 Absorption Modeling Hands-on                        |
+| 10:45 - 11:00 | 15m      | ☕ Morning Break                                        |
+| 11:00 - 11:45 | 45m      | Discrete Data Models                                   |
+| 11:45 - 12:30 | 45m      | 🔨 Discrete Data Models Hands-on                       |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                         |
-| 13:30 - 14:30 | 60m      | Bayesian Analysis                                      |
-| 14:30 - 14:45 | 15m      | ☕ Afternoon Break                                      |
-| 14:45 - 15:45 | 60m      | Non-Gaussian Random Effects Modeling                   |
-| 15:45 - 16:30 | 45m      | Q&A and Wrap-up                                       |
+| 13:30 - 14:15 | 45m      | Bayesian Analysis                                      |
+| 14:15 - 14:30 | 15m      | ☕ Afternoon Break                                      |
+| 14:30 - 15:15 | 45m      | Non-Gaussian Random Effects Modeling                   |
+| 15:15 - 16:30 | 75m      | Q&A and Wrap-up                                       |
 
 ### Legend
 - 🔨 Hands-on Workshop Sessions
@@ -51,8 +51,8 @@
 - 🍽️ Lunch Break
 
 ### Notes
-1. Each day includes 3+ hours of hands-on work
+1. Each day includes 2+ hours of hands-on work
 2. Content follows the actual structure of provided materials
-3. Julia basics (Day 1) provide foundation for PK/PD modeling
+3. Julia basics (Day 1) provide foundation for PopPK/PD modeling
 4. Progressive complexity from basic concepts to advanced applications
 5. Each topic is tied to specific example files for reference
