@@ -38,7 +38,7 @@
 | 09:30 - 10:15 | 45m      | 🔨 Absorption Modeling Hands-on                        |
 | 10:15 - 10:30 | 15m      | ☕ Morning Break                                        |
 | 10:30 - 11:30 | 60m      | Discrete Data Models                                   |
-| 11:30 - 12:30 | 60m      | 🔨 Discrete Data Models Workshop                       |
+| 11:30 - 12:30 | 60m      | 🔨 Discrete Data Models Hands-on                       |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                         |
 | 13:30 - 14:30 | 60m      | Bayesian Analysis                                      |
 | 14:30 - 14:45 | 15m      | ☕ Afternoon Break                                      |
