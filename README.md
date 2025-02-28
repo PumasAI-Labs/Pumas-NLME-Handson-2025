@@ -25,7 +25,7 @@
 | 10:30 - 11:15 | 45m      | PK and Exposure Simulation in Pumas                     |
 | 11:15 - 12:30 | 75m      | 🔨 PK and Exposure Simulation in Pumas Hands-on         |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                          |
-| 13:30 - 14:30 | 60m      | PK/PD Modeling in Pumas                                |
+| 13:30 - 14:30 | 60m      | PopPK/PD Modeling in Pumas                                |
 | 14:30 - 14:45 | 15m      | ☕ Afternoon Break                                      |
 | 14:45 - 15:30 | 45m      | PK/PD Model Simulation                                 |
 | 15:30 - 16:30 | 60m      | 🔨 PK/PD Model Simulation Workshop                     |
