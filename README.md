@@ -35,7 +35,7 @@
 | Time          | Duration | Activity                                               |
 |---------------|----------|--------------------------------------------------------|
 | 08:30 - 09:30 | 60m      | Absorption Modeling in Pumas                           |
-| 09:30 - 10:15 | 45m      | 🔨 Absorption Modeling Workshop                        |
+| 09:30 - 10:15 | 45m      | 🔨 Absorption Modeling Hands-on                        |
 | 10:15 - 10:30 | 15m      | ☕ Morning Break                                        |
 | 10:30 - 11:30 | 60m      | Discrete Data Models                                   |
 | 11:30 - 12:30 | 60m      | 🔨 Discrete Data Models Workshop                       |
