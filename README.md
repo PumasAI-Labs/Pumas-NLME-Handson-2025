@@ -8,7 +8,7 @@
 | 09:00 - 10:15 | 75m      | Introduction to Julia                                  |
 | 10:15 - 10:30 | 15m      | ☕ Morning Break                                        |
 | 10:30 - 11:15 | 45m      | Working With Data in Julia                             |
-| 11:15 - 12:30 | 75m      | 🔨 Julia Programming Workshop                          |
+| 11:15 - 12:30 | 75m      | 🔨 Julia Programming Hands-on                          |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                         |
 | 13:30 - 14:15 | 45m      | PK Modeling in Pumas I                                 |
 | 14:15 - 14:30 | 15m      | ☕ Afternoon Break                                      |
