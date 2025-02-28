@@ -13,7 +13,7 @@
 | 13:30 - 14:15 | 45m      | PopPK Modeling in Pumas I                                 |
 | 14:15 - 14:30 | 15m      | ☕ Afternoon Break                                      |
 | 14:30 - 15:15 | 45m      | PopPK Modeling in Pumas II                                |
-| 15:15 - 16:30 | 75m      | 🔨 PK Modeling Workshop                                |
+| 15:15 - 16:30 | 75m      | 🔨 PopPK Modeling Hands-on                                |
 
 ## Day 2: PK/PD Modeling Fundamentals
 
