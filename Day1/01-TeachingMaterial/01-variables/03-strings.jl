@@ -50,8 +50,9 @@ greeting * ", " * name          # Efficient for string-only concatenation
 "$greeting, $name"             # Embeds variables directly
 
 # Expression interpolation with $()
-"One plus two is equal to $(1 + 2)"              # Basic arithmetic
-"One plus two is equal to $(abs(-4) - 1)"        # Function calls
+"One plus two is equal to $(1 + 2)"                                 # Basic arithmetic
+
+"Absolute value of minus four minus one is equal to $(abs(-4) - 1)" # Function calls
 
 # -----------------------------------------------------------------------------
 # 4. PATTERN MATCHING AND SEARCHING
