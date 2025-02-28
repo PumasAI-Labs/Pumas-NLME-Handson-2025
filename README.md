@@ -15,7 +15,7 @@
 | 14:30 - 15:15 | 45m      | PopPK Modeling in Pumas II                                |
 | 15:15 - 16:30 | 75m      | 🔨 PopPK Modeling Hands-on                                |
 
-## Day 2: PK/PD Modeling Fundamentals
+## Day 2: Simulations & PK/PD Modeling
 
 | Time          | Duration | Activity                                               |
 |---------------|----------|---------------------------------------------------------|
