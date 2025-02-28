@@ -1,0 +1,144 @@
+using DataFrames, DataFramesMeta, PharmaDatasets, Logging
+
+# Exercise 1: Data Wrangling for PO SAD Data
+po_sad = dataset("po_sad_1")
+po_processed = copy(po_sad)
+
+# Add derived columns
+@rtransform! po_processed begin
+    # Weight-normalized dose
+    :DOSE_NRM = ismissing(:AMT) ? missing : :AMT / :WT
+    
+    # Log-transformed concentrations
+    :LDV = ismissing(:DV) ? missing : log(:DV)
+end
+
+# Calculate time since first dose
+@by po_processed :ID begin
+    :FIRST_DOSE = minimum(:TIME[.!ismissing.(:AMT)])
+end
+
+@rtransform! po_processed begin
+    :TAD = :TIME - :FIRST_DOSE
+end
+
+# Handle duplicate time points
+duplicates = combine(groupby(po_processed, [:ID, :TIME]), nrow => :count)
+duplicates = duplicates[duplicates.count .> 1, :]
+
+if !isempty(duplicates)
+    for row in eachrow(duplicates)
+        idx = findall(x -> x.ID == row.ID && x.TIME == row.TIME, po_processed)
+        po_processed[idx[2:end], :TIME] .+= 1e-6 .* (1:length(idx[2:end]))
+    end
+end
+
+# Exercise 2: Data Wrangling for IV Data
+iv_sd = dataset("iv_sd_1")
+iv_processed = copy(iv_sd)
+
+# Add CMT and EVID columns
+@rtransform! iv_processed begin
+    :CMT = ismissing(:AMT) ? missing : 1
+    :EVID = ismissing(:AMT) ? 0 : 1
+end
+
+# Calculate subject-specific metrics
+subject_metrics = combine(groupby(iv_processed, :ID)) do df
+    (
+        total_dose = sum(skipmissing(df.AMT)),
+        n_obs = count(.!ismissing.(df.DV)),
+        last_obs = maximum(df.TIME[.!ismissing.(df.DV)])
+    )
+end
+
+@info "Subject Metrics:"
+display(subject_metrics)
+
+# Exercise 3: Data Wrangling for Categorical Data
+nausea_data = dataset("nausea")
+nausea_processed = copy(nausea_data)
+
+# Create binary indicators
+@rtransform! nausea_processed begin
+    :TRT_BIN = :TRT == "active" ? 1 : 0
+end
+
+# Calculate proportions by treatment and time
+event_props = combine(groupby(nausea_processed, [:TRT, :TIME])) do df
+    (
+        n_subjects = nrow(df),
+        n_events = sum(df.NAUSEA),
+        prop_events = mean(df.NAUSEA)
+    )
+end
+
+# Create wide format
+nausea_wide = unstack(
+    nausea_processed,
+    :ID,
+    :TIME,
+    :NAUSEA,
+    renamecols = x -> "time_$x"
+)
+
+# Bonus Challenge: Advanced Data Manipulation
+function process_dataset(df::DataFrame)
+    # Identify dataset type
+    is_pk = all(col -> col ∈ names(df), [:TIME, :DV, :AMT])
+    
+    processed = copy(df)
+    
+    if is_pk
+        # PK data processing
+        @rtransform! processed begin
+            # Normalize concentrations by dose if available
+            :DV_NORM = if !ismissing(:DV) && !ismissing(:AMT)
+                :DV / :AMT
+            else
+                missing
+            end
+            
+            # Time since first dose
+            :TAD = :TIME - minimum(:TIME[.!ismissing.(:AMT)])
+        end
+        
+        # Wide format: pivot DV by time
+        wide = unstack(
+            processed,
+            :ID,
+            :TIME,
+            :DV,
+            renamecols = x -> "conc_$(x)"
+        )
+    else
+        # Categorical data processing
+        # Create dummy variables for string columns
+        for col in names(processed)
+            if eltype(processed[!, col]) <: Union{String, CategoricalValue}
+                dummies = DataFrame(
+                    indicator(processed[!, col]),
+                    :auto
+                )
+                processed = hcat(processed, dummies)
+            end
+        end
+        
+        # Wide format: one row per subject
+        wide = processed |> 
+            x -> groupby(x, :ID) |>
+            x -> combine(x, names(x) .=> first, renamecols=false)
+    end
+    
+    return (long=processed, wide=wide)
+end
+
+# Test the function on all datasets
+po_results = process_dataset(po_sad)
+iv_results = process_dataset(iv_sd)
+nausea_results = process_dataset(nausea_data)
+
+@info "Results of data processing:"
+@info "PO SAD:" long_shape=size(po_results.long) wide_shape=size(po_results.wide)
+@info "IV SD:" long_shape=size(iv_results.long) wide_shape=size(iv_results.wide)
+@info "Nausea:" long_shape=size(nausea_results.long) wide_shape=size(nausea_results.wide) 
