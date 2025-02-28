@@ -19,7 +19,7 @@
 
 | Time          | Duration | Activity                                               |
 |---------------|----------|---------------------------------------------------------|
-| 08:30 - 09:15 | 45m      | Estimation Uncertainty and Model Diagnostics in Pumas   |
+| 08:30 - 09:15 | 45m      | Uncertainty Estimation and Model Diagnostics in Pumas   |
 | 09:15 - 10:15 | 60m      | 🔨 Estimation Uncertainty and Model Diagnostics Workshop |
 | 10:15 - 10:30 | 15m      | ☕ Morning Break                                          |
 | 10:30 - 11:15 | 45m      | PK and Exposure Simulation in Pumas                     |
