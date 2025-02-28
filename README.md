@@ -28,7 +28,7 @@
 | 13:30 - 14:30 | 60m      | PopPK/PD Modeling in Pumas                                |
 | 14:30 - 14:45 | 15m      | ☕ Afternoon Break                                      |
 | 14:45 - 15:30 | 45m      | PopPK/PD Model Simulation                                 |
-| 15:30 - 16:30 | 60m      | 🔨 PK/PD Model Simulation Workshop                     |
+| 15:30 - 16:30 | 60m      | 🔨 PopPK/PD Model Simulation Hands-on                     |
 
 ## Day 3: Advanced Modeling & Simulation
 
