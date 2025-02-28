@@ -38,7 +38,7 @@ end    # Note: nested blocks need their own 'end'
 # While loops continue executing while a condition remains true
 
 println("\nWhile loop example:")
-counter = 1                      # Initialize counter
+counter = 1                     # Initialize counter
 while counter <= 10             # Condition for continuation
     println(counter)            # Body of the loop
     global counter = counter + 1 # Update counter (global needed in REPL/global scope)
@@ -49,13 +49,13 @@ end
 # -----------------------------------------------------------------------------
 
 # Sample data
-names = ["Peter", "Alice", "Juan", "Bob"]
+names_a = ["Peter", "Alice", "Juan", "Bob"]
 friend = "Alice"
 
 # Method 1: Using while loop for search
 println("\nSearching with while loop:")
 friend_index = 1
-while names[friend_index] != friend    # Continue until we find the friend
+while names_a[friend_index] != friend  # Continue until we find the friend
     global friend_index += 1           # Increment index (shorthand for += 1)
 end
 
@@ -63,9 +63,9 @@ println("$friend is in position number $friend_index of the list")
 
 # Method 2: Using for loop with break
 println("\nSearching with for loop and break:")
-for index in eachindex(names)          # eachindex gets all valid indices
-    if names[index] == friend
-        println("$(names[index]) is in position number $index of the list")
+for index in eachindex(names_a)          # eachindex gets all valid indices
+    if names_a[index] == friend
+        println("$(names_a[index]) is in position number $index of the list")
         break                          # Exit loop early when found
     end
 end
@@ -84,7 +84,7 @@ x2 = [2i for i = 1:10]            # Multiply each number by 2
 println("Doubled values: $x2")
 
 # String manipulation
-greetings = ["Hello, $name" for name in names]
+greetings = ["Hello, $name" for name in names_a]
 println("Greetings: $greetings")
 
 # Filtering with conditional
