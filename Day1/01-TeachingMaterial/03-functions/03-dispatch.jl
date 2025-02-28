@@ -44,7 +44,7 @@ function AUC(times::Vector, observations::Vector)
 end
 
 # This will fail - arguments must be Vectors
-AUC(1, 10)  
+# AUC(1, 10)  
 
 # This works - arguments match the type constraints
 AUC(times, observations)

@@ -21,7 +21,11 @@ geo_mean(rand(10))          # Works with random numbers
 
 # Using external packages for built-in functions
 using StatsBase             # Import statistical functions
-geomean(1:10)              # Built-in geometric mean from StatsBase
+geomean(1:10)               # Built-in geometric mean from StatsBase
+
+# Using well-tested functinos from packages is often preferable
+geo_mean(fill(1e9, 100))
+geomean(fill(1e9, 100))
 
 # -----------------------------------------------------------------------------
 # 2. FUNCTIONS WITH MULTIPLE ARGUMENTS
