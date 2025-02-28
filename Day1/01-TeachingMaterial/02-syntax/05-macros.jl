@@ -14,11 +14,11 @@
 # 2. Parenthesis syntax: @macro(arg1, arg2)
 
 # Common built-in macros:
-@time        # Measures execution time and memory allocation
-@show        # Prints both the expression and its value
-@assert      # Checks if a condition is true, errors if false
-@doc         # Accesses documentation
-@macroexpand # Shows the expanded form of a macro
+# @time        # Measures execution time and memory allocation
+# @show        # Prints both the expression and its value
+# @assert      # Checks if a condition is true, errors if false
+# @doc         # Accesses documentation
+# @macroexpand # Shows the expanded form of a macro
 
 # -----------------------------------------------------------------------------
 # 2. TIMING CODE WITH @time

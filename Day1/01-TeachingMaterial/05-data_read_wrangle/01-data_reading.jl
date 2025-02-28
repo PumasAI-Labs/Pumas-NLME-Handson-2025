@@ -28,7 +28,7 @@ using CSV, DataFrames, Logging
 @info "Reading warfarin data from CSV file..."
 @info "Note: Using missingstring='.' to handle NONMEM-style missing values"
 
-df = CSV.read("warfarin/warfarin_data.csv", DataFrame; missingstring=["."])
+df = CSV.read(joinpath(@__DIR__, "..", "..", "..", "data", "warfarin.csv"), DataFrame; missingstring=["."])
 
 # Step 2: Initial Data Exploration
 # ------------------------------
@@ -45,8 +45,8 @@ display(first(df, 5))
 @info "Dataset Structure Analysis"
 @info "Column names in the dataset:" columns=names(df)
 
-col_types = Dict(name => string(type) for (name, type) in zip(names(df), eltype.(eachcol(df))))
-@info "Column types:" types=col_types
+col_types = Dict(name => eltype(col) for (name, col) in zip(names(df), eachcol(df)))
+@info "Column types:" col_types
 
 # Step 4: Basic Data Summary
 # ------------------------

@@ -60,7 +60,7 @@ log.(obs[1])           # Works with any Julia function
 
 # Vectorizing multiple operations
 # Method 1: Chain dot operations
-abs(terminal_slope.(obs))     # Error: abs needs to be vectorized too
+# abs(terminal_slope.(obs))   # Error: abs needs to be vectorized too
 abs.(terminal_slope.(obs))    # Correct: both functions vectorized
 
 # Method 2: Use @. macro for automatic vectorization
