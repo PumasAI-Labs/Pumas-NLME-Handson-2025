@@ -23,7 +23,7 @@
 | 09:15 - 10:15 | 60m      | 🔨 Uncertainty Estimation and Model Diagnostics Hands-on |
 | 10:15 - 10:30 | 15m      | ☕ Morning Break                                          |
 | 10:30 - 11:15 | 45m      | PK and Exposure Simulation in Pumas                     |
-| 11:15 - 12:30 | 75m      | 🔨 PK and Exposure Simulation in Pumas Workshop         |
+| 11:15 - 12:30 | 75m      | 🔨 PK and Exposure Simulation in Pumas Hands-on         |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                          |
 | 13:30 - 14:30 | 60m      | PK/PD Modeling in Pumas                                |
 | 14:30 - 14:45 | 15m      | ☕ Afternoon Break                                      |
