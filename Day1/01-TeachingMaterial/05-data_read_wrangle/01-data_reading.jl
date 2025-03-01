@@ -32,30 +32,19 @@ df = CSV.read(joinpath(@__DIR__, "..", "..", "..", "data", "warfarin.csv"), Data
 
 # Step 2: Initial Data Exploration
 # ------------------------------
-@info "Basic Dataset Information:" metrics=(
-    rows = nrow(df),
-    columns = ncol(df)
-)
+@info "Basic Dataset Information:" nrow(df) ncol(df)
 
 @info "First 5 rows of data for initial inspection:"
-display(first(df, 5))
+first(df, 5)
 
-# Step 3: Understanding Column Names and Types
-# -----------------------------------------
-@info "Dataset Structure Analysis"
-@info "Column names in the dataset:" columns=names(df)
-
-col_types = Dict(name => eltype(col) for (name, col) in zip(names(df), eachcol(df)))
-@info "Column types:" col_types
-
-# Step 4: Basic Data Summary
+# Step 3: Basic Data Summary
 # ------------------------
 @info "Calculating summary statistics..."
 summary_stats = describe(df)
 @info "Summary statistics computed" details="Review the display below:"
 display(summary_stats)
 
-# Step 5: Check for Missing Values
+# Step 4: Check for Missing Values
 # ------------------------------
 @info "Analyzing missing values..."
 missing_counts = Dict(
