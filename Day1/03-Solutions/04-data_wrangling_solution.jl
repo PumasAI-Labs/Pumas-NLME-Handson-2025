@@ -36,7 +36,7 @@ end
 iv_sd = dataset("iv_sd_1")
 iv_processed = copy(iv_sd)
 
-# Add CMT and EVID columns
+# Add cmt and evid columns
 @rtransform! iv_processed begin
     :cmt = ismissing(:amt) ? missing : 1
     :evid = ismissing(:amt) ? 0 : 1
@@ -54,31 +54,6 @@ end
 @info "Subject Metrics:"
 display(subject_metrics)
 
-# Exercise 3: Data Wrangling for Categorical Data
-nausea_data = dataset("nausea")
-nausea_processed = copy(nausea_data)
-
-# Create binary indicators
-@rtransform! nausea_processed begin
-    :TRT_BIN = :TRT != "Placebo"
-end
-
-# Calculate proportions by treatment
-event_props = combine(groupby(nausea_processed, [:TRT,])) do df
-    (
-        n_subjects = nrow(df),
-        n_events = sum(df.NAUSEA),
-        prop_events = mean(df.NAUSEA)
-    )
-end
-
-# Create wide format
-nausea_wide = unstack(
-    nausea_processed,
-    :ID,
-    :NAUSEA,
-    renamecols = x -> "time_$x"
-)
 
 # Bonus Challenge: Advanced Data Manipulation
 function process_dataset(df::DataFrame)

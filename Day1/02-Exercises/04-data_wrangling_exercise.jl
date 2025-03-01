@@ -32,22 +32,6 @@ Using the iv_sd_1 dataset:
 # Your code here
 
 
-@info """
-Exercise 3: Data Wrangling for Categorical Data
--------------------------------------------
-Using the nausea dataset:
-1. Create binary indicator columns for:
-   - Treatment (convert to 0/1)
-   - Adverse events (if present in data)
-2. Calculate the proportion of events by:
-   - Treatment group
-   - Time point
-3. Create a wide format dataset where each row represents one subject
-"""
-
-# Your code here
-
-
 # Bonus Challenge
 @info """
 Bonus Challenge: Advanced Data Manipulation
