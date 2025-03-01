@@ -34,9 +34,9 @@ missing_counts = Dict(
 iv_sd = dataset("iv_sd_1")
 
 function analyze_pk_data(df::DataFrame)
-    n_subjects = length(unique(df.ID))
-    dose_range = extrema(filter(!ismissing, df.AMT))
-    time_range = extrema(df.TIME)
+    n_subjects = length(unique(df.id))
+    dose_range = extrema(filter(!ismissing, df.amt))
+    time_range = extrema(df.time)
     
     return Dict(
         "subjects" => n_subjects,

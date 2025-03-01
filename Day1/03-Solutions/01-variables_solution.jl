@@ -3,9 +3,9 @@ using Test
 # Exercise 1: Variable Declaration and Types
 dose = 100                    # mg
 volume_of_distribution = 48.2 # L
-half_life = 12.5             # hours
-is_fasted = true             # boolean
-patient_id = "SUBJ-001"      # string
+half_life = 12.5              # hours
+is_fasted = true              # boolean
+patient_id = "SUBJ-001"       # string
 
 # Test Exercise 1
 @test typeof(dose) == Int64

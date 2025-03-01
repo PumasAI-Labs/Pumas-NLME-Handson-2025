@@ -7,29 +7,28 @@ po_processed = copy(po_sad)
 # Add derived columns
 @rtransform! po_processed begin
     # Weight-normalized dose
-    :DOSE_NRM = ismissing(:AMT) ? missing : :AMT / :WT
+    :dose_nrm = ismissing(:amt) ? missing : :amt / :wt
     
     # Log-transformed concentrations
-    :LDV = ismissing(:DV) ? missing : log(:DV)
+    :ldv = ismissing(:dv)
 end
 
 # Calculate time since first dose
-@by po_processed :ID begin
-    :FIRST_DOSE = minimum(:TIME[.!ismissing.(:AMT)])
-end
-
-@rtransform! po_processed begin
-    :TAD = :TIME - :FIRST_DOSE
+po_processed = @chain po_processed begin
+    @groupby :id
+    @transform begin
+        :time_after_first_dose = :time .- minimum(:time[:evid .== 1])
+    end
 end
 
 # Handle duplicate time points
-duplicates = combine(groupby(po_processed, [:ID, :TIME]), nrow => :count)
+duplicates = combine(groupby(po_processed, [:id, :time]), nrow => :count)
 duplicates = duplicates[duplicates.count .> 1, :]
 
 if !isempty(duplicates)
     for row in eachrow(duplicates)
-        idx = findall(x -> x.ID == row.ID && x.TIME == row.TIME, po_processed)
-        po_processed[idx[2:end], :TIME] .+= 1e-6 .* (1:length(idx[2:end]))
+        idx = findall(x -> x.id == row.id && x.time == row.time, po_processed)
+        po_processed[idx[2:end], :time] .+= 1e-6 .* (1:length(idx[2:end]))
     end
 end
 
@@ -39,16 +38,16 @@ iv_processed = copy(iv_sd)
 
 # Add CMT and EVID columns
 @rtransform! iv_processed begin
-    :CMT = ismissing(:AMT) ? missing : 1
-    :EVID = ismissing(:AMT) ? 0 : 1
+    :cmt = ismissing(:amt) ? missing : 1
+    :evid = ismissing(:amt) ? 0 : 1
 end
 
 # Calculate subject-specific metrics
-subject_metrics = combine(groupby(iv_processed, :ID)) do df
+subject_metrics = combine(groupby(iv_processed, :id)) do df
     (
-        total_dose = sum(skipmissing(df.AMT)),
-        n_obs = count(.!ismissing.(df.DV)),
-        last_obs = maximum(df.TIME[.!ismissing.(df.DV)])
+        total_dose = sum(skipmissing(df.amt)),
+        n_obs = count(.!ismissing.(df.conc)),
+        last_obs = maximum(df.time[.!ismissing.(df.conc)])
     )
 end
 
@@ -61,11 +60,11 @@ nausea_processed = copy(nausea_data)
 
 # Create binary indicators
 @rtransform! nausea_processed begin
-    :TRT_BIN = :TRT == "active" ? 1 : 0
+    :TRT_BIN = :TRT != "Placebo"
 end
 
-# Calculate proportions by treatment and time
-event_props = combine(groupby(nausea_processed, [:TRT, :TIME])) do df
+# Calculate proportions by treatment
+event_props = combine(groupby(nausea_processed, [:TRT,])) do df
     (
         n_subjects = nrow(df),
         n_events = sum(df.NAUSEA),
@@ -77,7 +76,6 @@ end
 nausea_wide = unstack(
     nausea_processed,
     :ID,
-    :TIME,
     :NAUSEA,
     renamecols = x -> "time_$x"
 )
@@ -106,7 +104,7 @@ function process_dataset(df::DataFrame)
         # Wide format: pivot DV by time
         wide = unstack(
             processed,
-            :ID,
+            :id,
             :TIME,
             :DV,
             renamecols = x -> "conc_$(x)"
@@ -126,7 +124,7 @@ function process_dataset(df::DataFrame)
         
         # Wide format: one row per subject
         wide = processed |> 
-            x -> groupby(x, :ID) |>
+            x -> groupby(x, :id) |>
             x -> combine(x, names(x) .=> first, renamecols=false)
     end
     
