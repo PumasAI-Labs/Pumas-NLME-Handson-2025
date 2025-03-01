@@ -3,7 +3,7 @@
 # ==============================================================
 
 using Pumas, Serialization, Logging, PumasUtilities
-include(joinpath(@__DIR__, "..","..","Day1","01-TeachingMaterial","MW01-read_pumas_data.jl")) # This gives us the 'pop' object
+include(joinpath(@__DIR__, "..", "..", "Day1", "01-TeachingMaterial", "MW01-read_pumas_data.jl")) # This gives us the 'pop' object
 include("MW01-pkpd_model.jl")       # This gives us the 'warfarin_model'
 
 # Introduction to Population PK/PD Model Fitting
@@ -45,10 +45,11 @@ initial_params = init_params(warfarin_model)
 @info "Performing initial model fit..."
 @info "This may take a few minutes..."
 fpm = fit(
-    warfarin_model,  # The model we defined
-    pop,            # The population data
-    initial_params, # Starting values
-    FOCE()         # Estimation method
+    warfarin_model,                # The model we defined
+    pop,                           # The population data
+    initial_params,                # Starting values
+    FOCE(),                        # Estimation method
+    constantcoef = (; lag_ω = 0.0) # Variability on lags doesn't work
 )
 
 # Step 3: Examine Initial Results
@@ -63,8 +64,7 @@ coeftable(fpm)
 # ---------------------
 # Refit using:
 # - Previous parameter estimates as new starting values
-# - Individual random effects estimates (empirical Bayes estimates)
-# This often improves the fit and stability
+# This sometimes improves the fit and stability
 @info "Refining the model fit..."
 @info "Using previous estimates as new starting points..."
 @info "resets the inverse Hessian approximation of BFGS"
@@ -73,7 +73,7 @@ fpm = fit(
     pop,
     coef(fpm),     # Use previous parameter estimates
     FOCE();
-    init_randeffs = empirical_bayes(fpm)  # Use previous random effects
+    constantcoef = (; lag_ω = 0.0)
 )
 
 # Step 5: Evaluate Model Fit
@@ -114,7 +114,7 @@ display(ebes[1])
 @info "-------------------------------"
 nlls = findinfluential(fpm)
 @info "Top 5 most influential subjects (ID and influence metric):"
-display(sort(nlls, by=x->x[2], rev=true)[1:5])
+nlls[1:5]
 
 # Step 8: Save Results
 # -----------------
