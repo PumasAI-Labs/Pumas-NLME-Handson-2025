@@ -114,7 +114,7 @@ display(ebes[1])
 @info "-------------------------------"
 nlls = findinfluential(fpm)
 @info "Top 5 most influential subjects (ID and influence metric):"
-display(sort(nlls, by=x->x[2], rev=true)[1:5])
+nlls[1:5]
 
 # Step 8: Save Results
 # -----------------

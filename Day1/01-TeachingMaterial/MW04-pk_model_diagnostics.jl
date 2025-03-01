@@ -2,7 +2,7 @@
 # Purpose: Perform and interpret model diagnostics for the warfarin PK model
 # ==============================================================
 
-using Pumas, CairoMakie, DataFrames, DataFramesMeta, Logging
+using Pumas, CairoMakie, DataFrames, DataFramesMeta, CategoricalArrays, Logging
 include("MW03-pk_model_fitting.jl")  # This gives us the fitted model 'fpm'
 
 # Introduction to Model Diagnostics

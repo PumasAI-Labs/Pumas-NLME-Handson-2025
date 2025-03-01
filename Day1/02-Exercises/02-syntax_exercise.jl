@@ -5,7 +5,7 @@ Exercise 1: Conditional Statements
 --------------------------------
 Write conditional statements to:
 1. Check if a drug concentration (conc = 15.5 μg/mL) is within therapeutic range (10-20 μg/mL)
-2. Classify the drug exposure as:
+2. Wriate a function that classifies the drug exposure as:
    - "Low" if < 10 μg/mL
    - "Therapeutic" if between 10-20 μg/mL
    - "High" if > 20 μg/mL

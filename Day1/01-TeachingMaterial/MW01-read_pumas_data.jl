@@ -3,7 +3,7 @@
 # ================================================================
 
 using Pumas
-include("02-data_wrangling.jl")  # This gives us the 'df_wide' DataFrame
+include("05-data_read_wrangle/02-data_wrangling.jl")  # This gives us the 'df_wide' DataFrame
 
 @info "Creating Pumas Population from processed data..."
 
