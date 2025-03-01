@@ -64,8 +64,11 @@ fpm_inf = fit(
     pop,
     coef(fpm),
     FOCE();
-    init_randeffs = empirical_bayes(fpm),
-    constantcoef = (:pk_Ω, :pd_Ω),  # Fix variance parameters
+    constantcoef = (
+        :pk_Ω,
+        :pd_Ω,
+        :lag_ω
+    ), # Fix variance parameters
     optim_options = (; iterations = 0)
 )
 

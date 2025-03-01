@@ -45,11 +45,14 @@ initial_params = init_params(warfarin_model)
 @info "Performing initial model fit..."
 @info "This may take a few minutes..."
 fpm = fit(
-    warfarin_model,                # The model we defined
-    pop,                           # The population data
-    initial_params,                # Starting values
-    FOCE(),                        # Estimation method
-    constantcoef = (; lag_ω = 0.0) # Variability on lags doesn't work
+    warfarin_model,                      # The model we defined
+    pop,                                 # The population data
+    (;                                   # Starting values
+        initial_params...,
+        lag_ω = 0.0
+    ),
+    FOCE(),                              # Estimation method
+    constantcoef = (:lag_ω,)             # Variability on lags doesn't work
 )
 
 # Step 3: Examine Initial Results
@@ -73,7 +76,7 @@ fpm = fit(
     pop,
     coef(fpm),     # Use previous parameter estimates
     FOCE();
-    constantcoef = (; lag_ω = 0.0)
+    constantcoef = (:lag_ω,)
 )
 
 # Step 5: Evaluate Model Fit
