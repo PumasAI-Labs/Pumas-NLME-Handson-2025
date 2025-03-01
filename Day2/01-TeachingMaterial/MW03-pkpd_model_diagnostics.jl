@@ -1,9 +1,9 @@
-# Script: 07-model_diagnostics.jl
+# Script: MW03-pkpd_model_diagnostics.jl
 # Purpose: Perform and interpret model diagnostics for the warfarin PK/PD model
 # ==============================================================
 
 using Pumas, CairoMakie, DataFrames, DataFramesMeta, Logging
-include("06-model_fitting.jl")  # This gives us the fitted model 'fpm'
+include("MW02-pkpd_model_fitting.jl")  # This gives us the fitted model 'fpm'
 
 # Introduction to Model Diagnostics
 # ------------------------------

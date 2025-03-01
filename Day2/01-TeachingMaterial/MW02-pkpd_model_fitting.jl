@@ -1,10 +1,10 @@
-# Script: 06-model_fitting.jl
+# Script: MW02-pkpd_model_fitting.jl
 # Purpose: Fit the warfarin PK/PD model to data and examine results
 # ==============================================================
 
 using Pumas, Serialization, Logging, PumasUtilities
-include("03-read_pumas_data.jl")  # This gives us the 'pop' object
-include("04-pkpd_model.jl")       # This gives us the 'warfarin_model'
+include(joinpath(@__DIR__, "..","..","Day1","01-TeachingMaterial","MW01-read_pumas_data.jl")) # This gives us the 'pop' object
+include("MW01-pkpd_model.jl")       # This gives us the 'warfarin_model'
 
 # Introduction to Population PK/PD Model Fitting
 # ------------------------------------------
