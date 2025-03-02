@@ -1,9 +1,9 @@
-# Script: MW04-pkpd_model_uncertainty_quantification.jl
-# Purpose: Quantify uncertainty in parameter estimates for the warfarin PK/PD model
+# Script: AN01-pk_model_uncertainty.jl
+# Purpose: Provide uncertainty estimates for the points estimates of the model
 # ==============================================================
 
-using Pumas, CairoMakie, DataFrames, Logging
-include("MW02-pkpd_model_fitting.jl")  # This gives us the fitted model 'fpm'
+using Pumas, CairoMakie, DataFrames, DataFramesMeta, CategoricalArrays, Logging
+include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "MW03-pk_model_fitting.jl"))  # This gives us the fitted model 'fpm'
 
 # Introduction to Parameter Uncertainty
 # --------------------------------
@@ -13,22 +13,20 @@ include("MW02-pkpd_model_fitting.jl")  # This gives us the fitted model 'fpm'
 # 3. Some parameters may be more precisely estimated than others
 # 4. Uncertainty helps inform experimental design and data collection
 #
-# We'll explore two main approaches:
-# 1. Asymptotic Confidence Intervals
+# We'll explore a variety of approaches:
+# 1. Asymptotic confidence intervals
+#   a Sandwich estimator (default)
+#   b Inverse Hessian (the classical maximum likelihood estimator)
 # 2. Bootstrap Method (non-parametric resampling)
+# 3. Sampling importance resampling (SIR)
 
-@info "Asymptotic Confidence Intervals"
+@info "Asymptotic confidence intervals"
+@info "Sandwich estimator (default)"
 @info "===================================="
-try
-    asymp_inf = infer(fpm)
-    @info "Asymptotic inference successful!"
-    @info "Standard Errors from Asymptotic Inference:"
-    coeftable(asymp_inf)
-catch e
-    @info "Asymptotic inference failed."
-    @info "This often occurs with complex models or when parameters are highly correlated."
-    @info "We'll proceed with bootstrap analysis instead."
-end
+asymp_inf_a = infer(fpm)
+
+@info "Sandwich estimator (default)"
+asymp_inf_b = infer(fpm; sandwich_estimator = false)
 
 # Step 2: Bootstrap Analysis
 # ----------------------
@@ -39,42 +37,16 @@ end
 
 @info "Performing Bootstrap Analysis..."
 @info "This will take some time as we need to refit the model multiple times"
-@info "We'll use 10 bootstrap samples for this demonstration"
-@info "(In practice, you might want 100 or more samples)"
 
 # Perform bootstrap with progress updates
-bts_inf = infer(fpm, Bootstrap(samples = 10))
+bts_inf = infer(fpm, Bootstrap(samples = 100))
 
 @info "Bootstrap Analysis Complete!"
 @info "Parameter Standard Errors from Bootstrap:"
 coeftable(bts_inf)
 
-# Step 3: Handling Parameter Correlation
-# ---------------------------------
-@info "Assessing Parameter Correlation..."
-@info "Some parameters may be highly correlated, affecting their estimation"
-
-# Fix potentially problematic parameters
-@info "Refitting model with fixed variance parameters..."
-@info "This can help when variance parameters are poorly identified"
-
-fpm_inf = fit(
-    fpm.model,
-    pop,
-    coef(fpm),
-    FOCE();
-    constantcoef = (
-        :pk_Ω,
-        :pd_Ω,
-        :lag_ω
-    ), # Fix variance parameters
-    optim_options = (; iterations = 0)
-)
-
-# Try inference again with fixed parameters
-@info "Recalculating standard errors with fixed parameters:"
-inf_fixed = infer(fpm_inf)
-coeftable(inf_fixed)
+# Step 3: Sampling importance resampling
+sir_inf = infer(fpm, SIR(samples = 1000, resamples = 200))
 
 # Educational Note:
 # ---------------
