@@ -76,7 +76,7 @@ end
 @info "Removing problematic subject IDs..."
 n_before = nrow(df_processed)
 @rsubset! df_processed begin
-    :ID != "#"
+    !contains(:ID, "#")
 end
 n_removed = n_before - nrow(df_processed)
 @info "Removed rows with invalid subject IDs" n_removed

@@ -87,13 +87,16 @@ save("gof_concentration.png", fig_gof_conc)
 # ---------------------------
 @info "Generating Individual Subject Fits..."
 @info "These show how well the model describes individual subjects"
-subject_fits(insp,
+sf_v = subject_fits(insp,
     separate = true,
-    ids = unique(insp_df.id)[1:16],
+    ids = unique(insp_df.id),
     observations = [:conc],
-    facet = (combinelabels = true,)
+    facet = (combinelabels = true,),
+    paginate = true # this will generate a vector of plots
+                    # to avoid that each plot gets too small
 )
-
+# We can render all plots in one go by calling display on the vector
+display.(sf_v)
 
 # Educational Note:
 # ---------------
