@@ -1,9 +1,9 @@
-# Script: MW04-pkpd_model_uncertainty_quantification.jl
+# Script: 06-pkpd_model_uncertainty_quantification.jl
 # Purpose: Quantify uncertainty in parameter estimates for the warfarin PK/PD model
 # ==============================================================
 
 using Pumas, CairoMakie, DataFrames, Logging
-include("MW02-pkpd_model_fitting.jl")  # This gives us the fitted model 'fpm'
+include("04-pkpd_model_fitting.jl")  # This gives us the fitted model 'fpm'
 
 # Introduction to Parameter Uncertainty
 # --------------------------------

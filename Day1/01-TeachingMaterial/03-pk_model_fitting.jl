@@ -1,10 +1,10 @@
-# Script: MW02-pkpd_model_fitting.jl
+# Script: 03-pk_model_fitting_v1.jl
 # Purpose: Fit the warfarin PK/PD model to data and examine results
 # ==============================================================
 
 using Pumas, Serialization, Logging, PumasUtilities
-include(joinpath(@__DIR__, "..", "..", "Day1", "01-TeachingMaterial", "MW01-read_pumas_data.jl")) # This gives us the 'pop' object
-include("MW01-pkpd_model.jl")       # This gives us the 'warfarin_model'
+include("01-read_pumas_data.jl")  # This gives us the 'pop' object
+include("02-pk_model.jl")       # This gives us the 'warfarin_pkmodel'
 
 # Introduction to Population PK/PD Model Fitting
 # ------------------------------------------
@@ -24,7 +24,7 @@ include("MW01-pkpd_model.jl")       # This gives us the 'warfarin_model'
 # - Likelihood: Measure of how well the model fits the data
 # - AIC/BIC: Model comparison criteria that penalize complexity
 
-@info "Starting Population PK/PD Model Fitting Process"
+@info "Starting Population PK Model Fitting Process"
 @info "============================================"
 
 # Step 1: Initial Parameter Values
@@ -32,7 +32,7 @@ include("MW01-pkpd_model.jl")       # This gives us the 'warfarin_model'
 # Before fitting, we need starting values for all parameters
 # These come from the model's @param block initialization
 @info "Getting initial parameter values..."
-initial_params = init_params(warfarin_model)
+initial_params = init_params(warfarin_pkmodel)
 
 
 # Step 2: First Model Fit
@@ -45,14 +45,14 @@ initial_params = init_params(warfarin_model)
 @info "Performing initial model fit..."
 @info "This may take a few minutes..."
 fpm = fit(
-    warfarin_model,                      # The model we defined
-    pop,                                 # The population data
-    (;                                   # Starting values
+    warfarin_pkmodel,              # The model we defined
+    pop_pk,                        # The population data
+    (;                             # Starting values
         initial_params...,
         lag_ω = 0.0
     ),
-    FOCE(),                              # Estimation method
-    constantcoef = (:lag_ω,)             # Variability on lags doesn't work
+    FOCE(),                        # Estimation method
+    constantcoef = (:lag_ω,)      # Variability on lags doesn't work
 )
 
 # Step 3: Examine Initial Results
@@ -72,8 +72,8 @@ coeftable(fpm)
 @info "Using previous estimates as new starting points..."
 @info "resets the inverse Hessian approximation of BFGS"
 fpm = fit(
-    warfarin_model,
-    pop,
+    warfarin_pkmodel,
+    pop_pk,
     coef(fpm),     # Use previous parameter estimates
     FOCE();
     constantcoef = (:lag_ω,)
@@ -127,7 +127,7 @@ nlls[1:5]
 # - Share results with colleagues
 # - Use the model for simulations
 @info "Saving the fitted model..."
-filename = "warfarin_fpm.jls"
+filename = "warfarin_pk_fpm.jls"
 serialize(filename, fpm)
 @info "Model saved" path=filename
 

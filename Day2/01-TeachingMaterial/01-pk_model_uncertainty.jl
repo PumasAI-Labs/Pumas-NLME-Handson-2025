@@ -1,9 +1,9 @@
-# Script: AN01-pk_model_uncertainty.jl
+# Script: 01-pk_model_uncertainty.jl
 # Purpose: Provide uncertainty estimates for the points estimates of the model
 # ==============================================================
 
 using Pumas, CairoMakie, DataFrames, DataFramesMeta, CategoricalArrays, Logging
-include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "MW03-pk_model_fitting.jl"))  # This gives us the fitted model 'fpm'
+include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "03-pk_model_fitting.jl"))  # This gives us the fitted model 'fpm'
 
 # Introduction to Parameter Uncertainty
 # --------------------------------
