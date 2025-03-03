@@ -179,8 +179,21 @@ save("vpc_with_uncertainty_pca.png", fig_vpc_pca)
 @info "Performing Clinical Trial Simulation..."
 @info "We'll examine different dosing scenarios"
 
-# Simulate a dose of 300 at time 0:
+# Simulate a dose of 300 at time 0 in the population:
 dose_300 = DosageRegimen(300; time = 0)
+# Create a population with the new dosing regimen:
+pop_300 = Population(map(i -> Subject(id = i, events = dose300, covariates = (; FSZV=1, FSZCL=1)), 1:100))
+# Simulate:
+sims_300 = simobs(
+    warfarin_model, 
+    pop_300, 
+    coef(fpm), 
+    obstimes = 0.0:0.5:150.0,  # Fine time grid
+)
+# Plot:
+sim_plot(warfarin_model, sims_300; observations = [:conc])
+sim_plot(warfarin_model, sims_300; observations = [:pca])
+
 
 
 # Educational Note:
