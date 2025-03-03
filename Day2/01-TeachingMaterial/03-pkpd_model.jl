@@ -48,8 +48,6 @@ warfarin_model = @model begin
         # --------------------------------
         "PK variability matrix (CL, V, Tabs)"
         pk_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01])       # PK variability
-        "Lag time variability"
-        lag_ω    ∈ RealDomain(lower = 0.0, init = 0.1)    # Lag time variability
         "PD variability matrix (E0, Emax, EC50, Turnover)"
         pd_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01, 0.01]) # PD variability
         
@@ -68,7 +66,6 @@ warfarin_model = @model begin
     @random begin
         # PK random effects - multivariate normal distribution
         pk_η ~ MvNormal(pk_Ω)      # For CL, V, and Tabs
-        lag_η ~ Normal(0.0, lag_ω) # For lag time
         # PD random effects - multivariate normal distribution
         pd_η ~ MvNormal(pd_Ω)      # For E0, Emax, EC50, and Turnover
     end
@@ -100,7 +97,7 @@ warfarin_model = @model begin
     ##### Dosing Control Block #####
     # Define dosing-related parameters
     @dosecontrol begin
-        lags = (Depot = pop_lag * exp(lag_η),) # Individual lag time
+        lags = (Depot = pop_lag,) # Individual lag time
     end
 
     ##### Initial Conditions Block #####
