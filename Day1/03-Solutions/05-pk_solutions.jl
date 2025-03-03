@@ -43,7 +43,7 @@ fit_newinit = fit(
 )
 
 coefficients_table(fit_newinit) # Table of parameter estimates with metadata 
-
+vscodedisplay(compare_estimates(;fpm, fit_newinit))
 
 # Exercise 2: Evaluate Alternative Model Structures
 # --------------------------------------
@@ -160,7 +160,6 @@ coefficients_table(fit_2cmt) # Table of parameter estimates with metadata
 
 # AIC and VPC
 # --------------
-aic(fpm)
 aic(fit_2cmt)
 
 vpc_2cmt = vpc(fit_2cmt; observations = [:conc], ensemblealg = EnsembleThreads())
@@ -178,6 +177,17 @@ vpc_plot(vpc_2cmt,
     figure = (size = (800, 600),)
 )
 
+# Model comparison
+# --------------
+vscodedisplay(compare_estimates(;fpm, fit_2cmt)) # Comparison parameter estimates
+lrtest(fpm, fit_2cmt) # likelihood ratio test to compare the two nested models
+
+# Metrics comparison:
+comp_metrics = @chain metrics_table(fpm) begin
+    leftjoin(metrics_table(fit_2cmt); on = :Metric, makeunique = true)
+    rename!(:Value => :pk1cmp, :Value_1 => :pk2cmp)
+end
+vscodedisplay(comp_metrics)
 
 # Exercise 3: Evaluate Alternative Model Structures
 # --------------------------------------
@@ -286,7 +296,6 @@ coefficients_table(fit_gamma) # Table of parameter estimates with metadata
 
 # AIC and VPC
 # --------------
-aic(fpm)
 aic(fit_gamma)
 
 vpc_gamma = vpc(fit_gamma; observations = [:conc], ensemblealg = EnsembleThreads())
@@ -304,6 +313,16 @@ vpc_plot(vpc_gamma,
     figure = (size = (800, 600),)
 )
 
+# Model comparison
+# --------------
+vscodedisplay(compare_estimates(;fpm, fit_gamma)) # Comparison parameter estimates
+
+# Metrics comparison:
+comp_metrics = @chain metrics_table(fpm) begin
+    leftjoin(metrics_table(fit_gamma); on = :Metric, makeunique = true)
+    rename!(:Value => :pkLag, :Value_1 => :pkGamma)
+end
+vscodedisplay(comp_metrics)
 
 
 # Exercise 4: Evaluate correlation between ηCL and ηV1
@@ -414,10 +433,10 @@ fpm_corr = fit(
 )
 
 coef(fpm_corr) 
+vscodedisplay(compare_estimates(;fpm, fpm_corr))
 
 # AIC and VPC
 # --------------
-aic(fpm)
 aic(fpm_corr)
 
 vpc_corr= vpc(fpm_corr; observations = [:conc], ensemblealg = EnsembleThreads())
@@ -435,6 +454,17 @@ vpc_plot(vpc_corr,
     figure = (size = (800, 600),)
 )
 
+# Model comparison
+# --------------
+vscodedisplay(compare_estimates(;fpm, fpm_corr)) # Comparison parameter estimates
+lrtest(fpm, fpm_corr) # likelihood ratio test to compare the two nested models
+
+# Metrics comparison:
+comp_metrics = @chain metrics_table(fpm) begin
+    leftjoin(metrics_table(fpm_corr); on = :Metric, makeunique = true)
+    rename!(:Value => :pknocorr, :Value_1 => :pkcorr)
+end
+vscodedisplay(comp_metrics)
 
 
 # Exercise 5: Evaluate sex effect on CL
@@ -546,5 +576,18 @@ coefficients_table(fpm_sex)
 
 # AIC 
 # --------------
-aic(fpm)
 aic(fpm_sex)
+
+
+# Model comparison
+# --------------
+vscodedisplay(compare_estimates(;fpm, fpm_sex)) # Comparison parameter estimates
+lrtest(fpm, fpm_sex) # likelihood ratio test to compare the two nested models
+
+# Metrics comparison:
+comp_metrics = @chain metrics_table(fpm) begin
+    leftjoin(metrics_table(fpm_sex); on = :Metric, makeunique = true)
+    rename!(:Value => :pknosex, :Value_1 => :pksexoncl)
+end
+vscodedisplay(comp_metrics)
+
