@@ -1,9 +1,9 @@
-# Script: MW06-pkpd_model_latexify.jl
+# Script: 08-pkpd_model_latexify.jl
 # Purpose: Generate LaTeX equations from the warfarin PK/PD model
 # ==============================================================
 
 using Pumas, Latexify, CairoMakie, Logging
-include("MW01-pkpd_model.jl")  # This gives us the 'warfarin_model'
+include("03-pkpd_model.jl")  # This gives us the 'warfarin_model'
 
 # Introduction to Model Documentation
 # ------------------------------

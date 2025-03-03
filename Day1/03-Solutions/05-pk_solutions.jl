@@ -19,9 +19,9 @@ Using the warfarin PK model:
 4. Document which changes lead to better/worse fits
 """
 
-include(joinpath(@__DIR__, "..","01-TeachingMaterial","MW01-read_pumas_data.jl"))  # This gives us the 'pop' object
-include(joinpath(@__DIR__, "..","01-TeachingMaterial","MW02-pk_model.jl") )      # This gives us the 'warfarin_pkmodel'
-include(joinpath(@__DIR__, "..","01-TeachingMaterial","MW03-pk_model_fitting.jl") )      # This gives us the 'warfarin_pkmodel'
+include(joinpath(@__DIR__, "..","01-TeachingMaterial","01-read_pumas_data.jl"))  # This gives us the 'pop' object
+include(joinpath(@__DIR__, "..","01-TeachingMaterial","02-pk_model.jl") )      # This gives us the 'warfarin_pkmodel'
+include(joinpath(@__DIR__, "..","01-TeachingMaterial","03-pk_model_fitting.jl") )      # This gives us the 'warfarin_pkmodel'
 
 # First version of the model:
 initial_params = init_params(warfarin_pkmodel)

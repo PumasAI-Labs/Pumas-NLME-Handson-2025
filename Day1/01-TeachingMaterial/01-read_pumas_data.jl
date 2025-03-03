@@ -1,9 +1,9 @@
-# Script: 03-read_pumas_data.jl
+# Script: 01-read_pumas_data.jl
 # Purpose: Convert processed DataFrame into a Pumas Population object
 # ================================================================
 
 using Pumas
-include("02-data_wrangling.jl")  # This gives us the 'df_wide' DataFrame
+include("05-data_read_wrangle/03-data_wrangling.jl")  # This gives us the 'df_wide' DataFrame
 
 @info "Creating Pumas Population from processed data..."
 
@@ -74,3 +74,33 @@ vscodedisplay(df_pop)
 
 # Note: This Population object (pop) will be used in subsequent scripts
 # for model fitting and simulation 
+
+
+# The next modeling exercise will begin with the popPK model only -> Create a population based on concentrations only
+# ----------------------------
+pop_pk = read_pumas(
+    df_wide;
+    # Subject identification
+    id = :ID,           # Column containing subject IDs
+    
+    # Time information
+    time = :TIME,       # Column containing time points
+    
+    # Dosing information
+    amt = :AMOUNT,      # Dosing amounts
+    cmt = :CMT,         # Compartment numbers
+    evid = :EVID,       # Event type identifiers
+    
+    # Subject characteristics (covariates)
+    covariates = [
+        :SEX,           # Gender (0=female, 1=male)
+        :WEIGHT,        # Body weight in kg
+        :FSZV,          # Volume scaling factor
+        :FSZCL,         # Clearance scaling factor
+    ],
+    
+    # Measured responses (observations)
+    observations = [
+        :conc          # Drug concentration
+    ],
+)
