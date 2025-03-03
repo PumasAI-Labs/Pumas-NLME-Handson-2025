@@ -1,4 +1,4 @@
-# Purpose: HCV Model from 
+# Purpose: HCV Model from Nyberg et al., 2014
 # ==============================================================
 
 using Pumas, StableRNGs
@@ -9,6 +9,7 @@ using Pumas, StableRNGs
 #########################################################################################
 
 # Model set up
+#------------
 model_hcv = @model begin
     # The "@param" block specifies the parameters
     @param begin
@@ -89,9 +90,11 @@ model_hcv = @model begin
     end
   end
 
-  dr = DosageRegimen(180.0, ii = 7.0, addl = 3, duration = 1.0)
 
-# Initial parameter values
+# Simulations
+#------------
+
+# Initial parameter values:
 init = (
     logθKa = log(0.80),
     logθKe = log(0.15),
@@ -113,22 +116,25 @@ init = (
     σ²PD = 0.04,
   )
 
-# Simulation:
+# Dosing regimen: 180 μg administered as a 24 h infusion once a week for 4 weeks
+dr = DosageRegimen(180.0, ii = 7.0, addl = 3, duration = 1.0)
+
+# Sampling times:
 t = [0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 6.99, 10.0, 13.99, 20.99, 28.0]
 
+# Create a popualtion:
 pop = map(i -> Subject(id = i, events = dr, time = t), 1:3)
 
+# Simulate:
 rng = StableRNG(23) # for reproducibility
 simdata = simobs(
     model_hcv,
     pop,
     init;
-    rng,
-    ensemblealg = EnsembleSerial(),
+    rng
   )
 
-Subject.(simdata)
-
+# Plot:
 sim_plot(simdata, observations = [:yPK])
 
 sim_plot(simdata, observations = [:yPD])
