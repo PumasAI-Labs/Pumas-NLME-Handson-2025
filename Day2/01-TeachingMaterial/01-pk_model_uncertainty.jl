@@ -18,7 +18,8 @@ include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "03-pk_model_fitting
 #   a Sandwich estimator (default)
 #   b Inverse Hessian (the classical maximum likelihood estimator)
 # 2. Bootstrap Method (non-parametric resampling)
-# 3. Sampling importance resampling (SIR)
+# 3. Sampling importance resampling (SIR) 
+#    https://link.springer.com/article/10.1007/s10928-016-9487-8
 
 @info "Asymptotic confidence intervals"
 @info "Sandwich estimator (default)"
