@@ -66,7 +66,6 @@ fpm_inf = fit(
     constantcoef = (
         :pk_Ω,
         :pd_Ω,
-        :lag_ω
     ), # Fix variance parameters
     optim_options = (; iterations = 0)
 )
@@ -75,6 +74,7 @@ fpm_inf = fit(
 @info "Recalculating standard errors with fixed parameters:"
 inf_fixed = infer(fpm_inf)
 coeftable(inf_fixed)
+vscodedisplay(coefficients_table(fpm_inf,inf_fixed))
 
 # Educational Note:
 # ---------------
