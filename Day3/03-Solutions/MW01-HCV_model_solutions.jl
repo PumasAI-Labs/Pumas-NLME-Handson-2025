@@ -1,19 +1,16 @@
 # Purpose: HCV Model from Nyberg et al., 2014
+# https://pmc.ncbi.nlm.nih.gov/articles/PMC4294071/
 # ==============================================================
 
-using Pumas, StableRNGs
+using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging
 
-#########################################################################################
-# HCV model from "Methods and software tools for design evaluation in population        #
-# pharmacokinetics– pharmacodynamics studies" in BJCP written by Nyberg et al           #
-#########################################################################################
 
 # Model set up
 #------------
 model_hcv = @model begin
     # The "@param" block specifies the parameters
     @param begin
-      # fixed effects with lower and upper bounds
+      # fixed effects 
       logθKa ∈ RealDomain()
       logθKe ∈ RealDomain()
       logθVd ∈ RealDomain()
@@ -21,7 +18,7 @@ model_hcv = @model begin
       logθδ ∈ RealDomain()
       logθc ∈ RealDomain()
       logθEC50 ∈ RealDomain()
-      # random effects variance parameters, must be posisitive
+      # random effects variance parameters, must be positive
       ω²Ka ∈ RealDomain(lower = 0.0)
       ω²Ke ∈ RealDomain(lower = 0.0)
       ω²Vd ∈ RealDomain(lower = 0.0)
@@ -29,7 +26,7 @@ model_hcv = @model begin
       ω²δ ∈ RealDomain(lower = 0.0)
       ω²c ∈ RealDomain(lower = 0.0)
       ω²EC50 ∈ RealDomain(lower = 0.0)
-      # variance parameter in proportional error model
+      # variance parameter in error models
       σ²PK ∈ RealDomain(lower = 0.0)
       σ²PD ∈ RealDomain(lower = 0.0)
     end
@@ -53,6 +50,7 @@ model_hcv = @model begin
       e = 1e-7
       s = 20000.0
 
+      # Individual parameters
       logKa = logθKa + ηKa
       logKe = logθKe + ηKe
       logVd = logθVd + ηVd
@@ -75,8 +73,8 @@ model_hcv = @model begin
       A' = exp(logKa) * X - exp(logKe) * A
       T' = s - T * (e * W + d)
       I' = e * W * T - exp(logδ) * I
-      W' =
-        p / ((A / exp(logVd) / exp(logEC50) + 1e-100)^exp(logn) + 1) * I - exp(logc) * W
+      W' = p * (1 - ( (A / exp(logVd))^exp(logn) + 1e-100) / ( (A / exp(logVd))^exp(logn) + 1e-100) + (exp(logEC50)^exp(logn)) + 1e-100)*I - exp(logc) * W  #  to avoid C and EC50 reaching 0
+     #  W' = p / ((A / exp(logVd) / exp(logEC50) + 1e-100)^exp(logn) + 1) * I - exp(logc) * W # Reparameterization
     end
 
     # The derived block is used to model the dependent variables. Both will
@@ -85,7 +83,7 @@ model_hcv = @model begin
     @derived begin
       conc := @. A / exp(logVd)
       log10W := @. log10(W)
-      yPK ~ @. Normal(A / exp(logVd), sqrt(σ²PK))
+      yPK ~ @. Normal(conc, sqrt(σ²PK))
       yPD ~ @. Normal(log10W, sqrt(σ²PD))
     end
   end
@@ -122,19 +120,30 @@ dr = DosageRegimen(180.0, ii = 7.0, addl = 3, duration = 1.0)
 # Sampling times:
 t = [0.25, 0.5, 1.0, 2.0, 3.0, 4.0, 6.99, 10.0, 13.99, 20.99, 28.0]
 
-# Create a popualtion:
-pop = map(i -> Subject(id = i, events = dr, time = t), 1:3)
+# Create a population:
+pop = map(i -> Subject(id = i, events = dr, time = t), 1:10)
 
 # Simulate:
-rng = StableRNG(23) # for reproducibility
 simdata = simobs(
     model_hcv,
     pop,
     init;
-    rng
   )
 
 # Plot:
-sim_plot(simdata, observations = [:yPK])
+sim_plot(simdata, observations = [:yPK], axis = (; xticks = 0:7:30))
 
-sim_plot(simdata, observations = [:yPD])
+sim_plot(simdata, observations = [:yPD],  axis = (; xticks = 0:7:30))
+
+
+# Simulate wth fine time grid:
+simdata = simobs(
+    model_hcv,
+    pop,
+    init;
+    obstimes = 0.0:0.1:28,  # Fine time grid
+  ) 
+  
+sim_plot(simdata, observations = [:yPK], axis = (; xticks = 0:7:30))
+sim_plot(simdata, observations = [:yPD],  axis = (; xticks = 0:7:30))
+  
