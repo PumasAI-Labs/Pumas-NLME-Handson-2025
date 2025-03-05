@@ -1,5 +1,6 @@
 using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
-include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "01-read_pumas_data.jl"))  # This gives us the fitted model 'fpm' and 'pop'
+include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "01-read_pumas_data.jl"))
+include(joinpath("..", "..", "Day1", "02-TeachingMaterial", "04-pkpd_model_fitting.jl"))
 
 @info """
 Bayesian Workflow for Warfarin PK/PD Model
@@ -125,7 +126,7 @@ Post-Processing MCMC Results
 
 # Inspect the traces of the chains
 trace_plot(
-    Chains(bayes_fpm),
+    bayes_fpm,
     linkyaxes = :none,
 )
 
@@ -144,17 +145,18 @@ bayes_fpm_samples = Pumas.discard(bayes_fpm, burnin = 100)
 post_mean = mean(bayes_fpm_samples)
 mle = coef(fpm)
 
-combine(
-    bayes_fpm_chns_df,
-    Not(:iteration, :chain) .=> mean .=> Not(:iteration, :chain)
-)
-
 # Calculate relative differences
 rel_diff = Dict(
     param => (post_mean[param] - mle[param]) / mle[param] 
     for param in keys(mle) if contains(string(param), "pop") && !contains(string(param), "lag")
 )
-    
+
+bayes_fpm_chns_df = DataFrame(Chains(bayes_fpm_samples))
+combine(
+    bayes_fpm_chns_df,
+    Not(:iteration, :chain) .=> mean .=> Not(:iteration, :chain)
+)
+
 # Create posterior density plot for turnover time
 @info "Creating posterior density plot for turnover time..."
 fig = density_plot(bayes_fpm_samples, parameters = [:pop_tover])
