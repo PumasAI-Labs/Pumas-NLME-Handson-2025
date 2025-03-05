@@ -1,5 +1,5 @@
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging, NamedTupleTools
-include("06-model_fitting.jl")  # This gives us the fitted model 'fpm' and 'pop'
+using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
+include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "01-read_pumas_data.jl"))  # This gives us the fitted model 'fpm' and 'pop'
 
 @info """
 Bayesian Workflow for Warfarin PK/PD Model
@@ -97,8 +97,6 @@ Using the No-U-Turn Sampler (NUTS):
 - Stiff ODE solver (Rodas5P) for numerical stability
 """
 
-using OrdinaryDiffEq: Rodas5P
-
 @info "Starting Bayesian model fitting..." 
 @info "This may take some time depending on the number of samples and chains"
 
@@ -118,34 +116,45 @@ bayes_fpm = fit(
 @info """
 Post-Processing MCMC Results
 ===========================
-1. Discard burn-in samples
-2. Calculate posterior means
-3. Compare with maximum likelihood estimates
-4. Visualize posterior distributions
+1. Inspect trace plots
+2. Discard burn-in samples
+3. Calculate posterior means
+4. Compare with maximum likelihood estimates
+5. Visualize posterior distributions
 """
+
+# Inspect the traces of the chains
+trace_plot(
+    Chains(bayes_fpm),
+    linkyaxes = :none,
+)
+
+# Printing all parameters parameters can be a bit busy
+trace_plot(
+    Chains(bayes_fpm),
+    linkyaxes = :none,
+    parameters = [:pop_CL, :pop_V, :pop_c50, :pop_e0, :pop_emax, :pop_tabs, :pop_tover]
+)
 
 # Remove burn-in period and get final samples
 bayes_fpm_samples = Pumas.discard(bayes_fpm, burnin = 100)
 
 # Compare posterior means with maximum likelihood estimates
-@info "Comparing estimates:" begin
-    post_mean = mean(bayes_fpm_samples)
-    mle = coef(fpm)
-    mle = delete(mle, :pop_lag, :lag_ω)
-    
-    # Calculate relative differences
-    rel_diff = Dict(
-        param => (post_mean[param] - mle[param])/mle[param] 
-        for param in keys(mle)
-    )
-    
-    (
-        posterior_means = post_mean,
-        maximum_likelihood = mle,
-        relative_differences = rel_diff
-    )
-end
+@info "Comparing estimates:"
+post_mean = mean(bayes_fpm_samples)
+mle = coef(fpm)
 
+combine(
+    bayes_fpm_chns_df,
+    Not(:iteration, :chain) .=> mean .=> Not(:iteration, :chain)
+)
+
+# Calculate relative differences
+rel_diff = Dict(
+    param => (post_mean[param] - mle[param]) / mle[param] 
+    for param in keys(mle) if contains(string(param), "pop") && !contains(string(param), "lag")
+)
+    
 # Create posterior density plot for turnover time
 @info "Creating posterior density plot for turnover time..."
 fig = density_plot(bayes_fpm_samples, parameters = [:pop_tover])
