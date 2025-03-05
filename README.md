@@ -34,15 +34,15 @@
 
 | Time          | Duration | Activity                                               |
 |---------------|----------|--------------------------------------------------------|
-| 09:00 - 09:45 | 45m      | Absorption Modeling                                    |
-| 09:45 - 10:45 | 60m      | 🔨 Absorption Modeling Hands-on                        |
+| 09:00 - 09:45 | 45m      | Quarto and Non-Gaussian Random Effects Modeling        |
+| 09:45 - 10:45 | 60m      | 🔨 Non-Gaussian Random Effects Modeling                |
 | 10:45 - 11:00 | 15m      | ☕ Morning Break                                        |
-| 11:00 - 11:45 | 45m      | Discrete Data Models                                   |
-| 11:45 - 12:30 | 45m      | 🔨 Discrete Data Models Hands-on                       |
+| 11:00 - 11:45 | 45m      | A viral model                                         |
+| 11:45 - 12:30 | 45m      | 🔨 A viral model Hands-on                             |
 | 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                         |
 | 13:30 - 14:15 | 45m      | Bayesian Analysis                                      |
 | 14:15 - 14:30 | 15m      | ☕ Afternoon Break                                      |
-| 14:30 - 15:15 | 45m      | Non-Gaussian Random Effects Modeling                   |
+| 14:30 - 15:15 | 45m      | Discrete error models                                 |
 | 15:15 - 16:30 | 75m      | Q&A and Wrap-up                                       |
 
 ### Legend
