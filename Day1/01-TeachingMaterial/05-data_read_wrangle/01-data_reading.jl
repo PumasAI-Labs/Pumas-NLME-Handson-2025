@@ -1,18 +1,23 @@
-# Script: 01-data_reading.jl
-# Purpose: Read and explore warfarin PK/PD data from CSV file
-# ========================================================
+# =============================================================================
+# Data Wrangling and Visualization - Part 1: Reading Data
+# =============================================================================
 
-using CSV, DataFrames, Logging
-
-# Introduction to Data Reading and Exploration
-# ---------------------------------------
 # Understanding your data is the first crucial step in PK/PD modeling.
 # This script demonstrates:
 # 1. Reading structured clinical trial data
 # 2. Initial data exploration and validation
 # 3. Understanding data structure and quality
 # 4. Identifying potential data issues
-#
+
+# -----------------------------------------------------------------------------
+# 1. PACKAGES FOR READING DATA
+# -----------------------------------------------------------------------------
+using CSV, DataFrames, Logging
+
+# -----------------------------------------------------------------------------
+# 2. READING DATA
+# -----------------------------------------------------------------------------
+
 # The warfarin dataset contains:
 # - Time measurements
 # - Drug concentrations
@@ -20,32 +25,30 @@ using CSV, DataFrames, Logging
 # - Patient characteristics (weight, sex)
 # - Dosing information
 
-@info "Starting Data Reading and Exploration Process"
-@info "=========================================="
-
-# Step 1: Read the CSV file
-# ------------------------
 @info "Reading warfarin data from CSV file..."
 @info "Note: Using missingstring='.' to handle NONMEM-style missing values"
 
-df = CSV.read(joinpath(@__DIR__, "..", "..", "..", "data", "warfarin.csv"), DataFrame; missingstring=["."])
+df = CSV.read(
+    joinpath(@__DIR__, "..", "..", "..", "data", "warfarin.csv"),
+    DataFrame;
+    missingstring=["."]
+)
 
-# Step 2: Initial Data Exploration
-# ------------------------------
+# -----------------------------------------------------------------------------
+# 3. INITIAL DATA EXPLORATION
+# -----------------------------------------------------------------------------
 @info "Basic Dataset Information:" nrow(df) ncol(df)
 
 @info "First 5 rows of data for initial inspection:"
 first(df, 5)
 
-# Step 3: Basic Data Summary
-# ------------------------
+# Basic data summary
 @info "Calculating summary statistics..."
 summary_stats = describe(df)
 @info "Summary statistics computed" details="Review the display below:"
 display(summary_stats)
 
-# Step 4: Check for Missing Values
-# ------------------------------
+# Checking for missing values
 @info "Analyzing missing values..."
 missing_counts = Dict(
     col => sum(ismissing.(df[:, col])) 
@@ -54,18 +57,16 @@ missing_counts = Dict(
 )
 @info "Missing value counts:" counts=missing_counts
 
-# Educational Note:
-# ---------------
-@info "Key Takeaways from Data Reading:"
-@info "1. Always check data structure and types after reading"
-@info "2. Understand how missing values are represented"
-@info "3. Look for potential data quality issues"
-@info "4. Verify that the data matches the expected format"
-@info "5. Document any assumptions or special handling"
+# -----------------------------------------------------------------------------
+# TIPS AND BEST PRACTICES
+# -----------------------------------------------------------------------------
+# 1. Always check data structure and types after reading
+# 2. Understand how missing values are represented
+# 3. Look for potential data quality issues
+# 4. Verify that the data matches the expected format
+# 5. Document any assumptions or special handling
 
 # Next Steps:
-# ----------
-@info "Next Steps:"
-@info "1. Data wrangling (02-data_wrangling.jl)"
-@info "2. Creating a Pumas population object"
-@info "3. Initial data visualizations"
+# 1. Data visualization (02-data_visualization.jl)
+# 2. Data wrangling (03-data_wrangling.jl)"
+# 3. Creating a Pumas population object
