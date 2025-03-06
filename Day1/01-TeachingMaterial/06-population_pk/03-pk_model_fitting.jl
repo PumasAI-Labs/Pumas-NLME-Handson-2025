@@ -1,16 +1,12 @@
-# Script: 03-pk_model_fitting_v1.jl
-# Purpose: Fit the warfarin PK/PD model to data and examine results
-# ==============================================================
+# =============================================================================
+# Population PK Modeling in Pumas - Part 3: Fitting a Pumas Model
+# =============================================================================
 
-using Pumas, Serialization, Logging, PumasUtilities
-include("01-read_pumas_data.jl")  # This gives us the 'pop' object
-include("02-pk_model.jl")       # This gives us the 'warfarin_pkmodel'
-
-# Introduction to Population PK/PD Model Fitting
-# ------------------------------------------
 # Population modeling estimates both:
 # 1. Population parameters (fixed effects) - typical values in the population
-# 2. Random effects - individual deviations from typical values
+# 2. Random effects - variability of the individual deviations from typical
+# values AND variability of the deviations between predicted and observed
+# outcomes
 #
 # The fitting process involves:
 # - Maximum likelihood estimation
@@ -24,146 +20,157 @@ include("02-pk_model.jl")       # This gives us the 'warfarin_pkmodel'
 # - Likelihood: Measure of how well the model fits the data
 # - AIC/BIC: Model comparison criteria that penalize complexity
 
-@info "Starting Population PK Model Fitting Process"
-@info "============================================"
+# Import the previous code that create the Pumas population and Pumas model
+include("01-read_pumas_data.jl")  # This gives us the pop object
+include("02-pk_model.jl")  # This gives us the warfarin_pkmodel
 
-# Step 1: Initial Parameter Values
-# ----------------------------
+# -----------------------------------------------------------------------------
+# 1. PACKAGES FOR FITTING PUMAS MODELS
+# -----------------------------------------------------------------------------
+using Pumas, Serialization, Logging, PumasUtilities
+
+# -----------------------------------------------------------------------------
+# 2. INITIAL PARAMETER ESTIMATES
+# -----------------------------------------------------------------------------
 # Before fitting, we need starting values for all parameters
 # These come from the model's @param block initialization
-@info "Getting initial parameter values..."
+# Returns a NamedTuple
 initial_params = init_params(warfarin_pkmodel)
 
-
-# Step 2: First Model Fit
-# --------------------
+# -----------------------------------------------------------------------------
+# 3. ESTIMATING PARAMETERS
+# -----------------------------------------------------------------------------
 # Fit the model using FOCE method
 # This step:
 # - Optimizes population parameters
 # - Estimates individual random effects
 # - Computes the likelihood
-@info "Performing initial model fit..."
-@info "This may take a few minutes..."
-fpm = fit(
+warfarin_pkmodel_fit = fit(
     warfarin_pkmodel,              # The model we defined
-    pop_pk,                        # The population data
-    (;                             # Starting values
-        initial_params...,
-        lag_ω = 0.0
-    ),
+    pop_pk,                           # The population data
+    initial_params,                # Starting values
     FOCE(),                        # Estimation method
-    constantcoef = (:lag_ω,)      # Variability on lags doesn't work
 )
 
-# Step 3: Examine Initial Results
-# ---------------------------
-# Look at the estimated parameters and their uncertainty
-@info "Initial Fit Results:"
-@info "------------------"
-@info "Fitted population parameters:"
-coeftable(fpm)
+# Obtain parameter uncertainty
+warfarin_pkmodel_varcov = infer(warfarin_pkmodel_fit)
 
-# Step 4: Model Refinement
-# ---------------------
+# -----------------------------------------------------------------------------
+# 3. EXAMINE MODEL RESULTS
+# -----------------------------------------------------------------------------
+# Look at the estimated parameters and their uncertainty
+coeftable(warfarin_pkmodel_varcov)
+
+# -----------------------------------------------------------------------------
+# 4. MODEL REFINEMENT
+# -----------------------------------------------------------------------------
 # Refit using:
 # - Previous parameter estimates as new starting values
+# - Resets the inverse Hessian approximation of BFGS
 # This sometimes improves the fit and stability
-@info "Refining the model fit..."
-@info "Using previous estimates as new starting points..."
-@info "resets the inverse Hessian approximation of BFGS"
-fpm = fit(
+warfarin_pkmodel_fit = fit(
     warfarin_pkmodel,
     pop_pk,
-    coef(fpm),     # Use previous parameter estimates
-    FOCE();
-    constantcoef = (:lag_ω,)
+    coef(warfarin_pkmodel_fit),  # Use previous parameter estimates
+    FOCE(),
 )
 
-# Step 5: Evaluate Model Fit
-# -----------------------
+# -----------------------------------------------------------------------------
+# 5. NUMERICAL DIAGNOSTICS
+# -----------------------------------------------------------------------------
 # Various statistics help us assess model fit:
-# - Log-likelihood: Higher is better
-# - AIC: Lower is better, penalizes model complexity
+# - log_likelihood: Higher is better
+# - AIC: Lower is better, penalizes model complexity 
+#       (calculated based on -2LL)
 # - BIC: Lower is better, penalizes complexity more strongly than AIC
-@info "Model Fit Statistics:"
-@info "-------------------"
-@info "Model fit metrics:" metrics=(
-    loglikelihood = loglikelihood(fpm),
-    AIC = aic(fpm),
-    BIC = bic(fpm)
+#       (calculated based on -2LL)
+# - Condition_Number: Lower is better, assessment of parameter collinearity
+#       (calculated based on correlation matrix of parameter estimates)
+# - ηshrinkage: Lower is better
+# - ϵshrinkage: Lower is better
+@info "Model Fit Metrics:" metrics = (
+    log_likelihood = loglikelihood(warfarin_pkmodel_fit),
+    AIC = aic(warfarin_pkmodel_fit),
+    BIC = bic(warfarin_pkmodel_fit),
+    Condition_Number = cond(warfarin_pkmodel_varcov),
+    ηshrinkage = ηshrinkage(warfarin_pkmodel_fit),
+    ϵshrinkage = ϵshrinkage(warfarin_pkmodel_fit)
 )
 
-@info "Model fit metrics" 
-metrics = metrics_table(fpm)
+# Obtain a table of the numerical diagnostics for the model
+metrics = metrics_table(warfarin_pkmodel_fit)
 
-# Step 6: Individual-Level Analysis
-# -----------------------------
-# Examine how well the model describes individual subjects
+# -----------------------------------------------------------------------------
+# 6. OBTAINING EMPIRICAL BAYES ESTIMATES
+# -----------------------------------------------------------------------------
 # Empirical Bayes Estimates (EBEs) show individual deviations from population
-@info "Examining Individual-Level Predictions:"
-@info "-------------------------------------"
-ebes = empirical_bayes(fpm)
-@info "Random effects for first subject (deviations from population mean):"
+# typical values
+ebes = empirical_bayes(warfarin_pkmodel_fit)
+
+# Random effects for first subject (deviations from population mean)
 display(ebes[1])
 
-# Step 7: Model Diagnostics
-# ----------------------
+# -----------------------------------------------------------------------------
+# 7. OBTAINING INDIVIDUAL -LOGLIKELIHOODS
+# -----------------------------------------------------------------------------
 # Identify subjects that strongly influence the model fit
 # Large influence might indicate:
 # - Outliers
 # - Model misspecification for certain subjects
 # - Data quality issues
-@info "Identifying Influential Subjects:"
-@info "-------------------------------"
-nlls = findinfluential(fpm)
-@info "Top 5 most influential subjects (ID and influence metric):"
+nlls = findinfluential(warfarin_pkmodel_fit)
+
+# Identify the top 5 most influential subjects (ID and influence metric):
 nlls[1:5]
 
-# Step 8: Save Results
-# -----------------
+# -----------------------------------------------------------------------------
+# 8. SAVING RESULTS
+# -----------------------------------------------------------------------------
 # Save the fitted model for later use
 # This allows us to:
 # - Continue analysis later
 # - Share results with colleagues
 # - Use the model for simulations
-@info "Saving the fitted model..."
-filename = "warfarin_pk_fpm.jls"
-serialize(filename, fpm)
-@info "Model saved" path=filename
+filename = joinpath(@__DIR__,"warfarin_pk_fpm.jls")
+serialize(filename, warfarin_pkmodel_fit)
+@info "Model Saved" path = filename
 
-# Step 9: Verify Saved Results
-# -------------------------
+# -----------------------------------------------------------------------------
+# 9. LOADING PREVIOUSLY SAVED RESULTS
+# -----------------------------------------------------------------------------
 # Load the saved model and check it matches original
-@info "Verifying saved results..."
-loaded_fpm = deserialize(filename)
-@info "Model verification" original_ll=loglikelihood(fpm) loaded_ll=loglikelihood(loaded_fpm)
+loaded_pkmodel_fit = deserialize(filename)
+@info "Model Verification" models = (
+    original_ll = loglikelihood(warfarin_pkmodel_fit),
+    loaded_ll = loglikelihood(loaded_pkmodel_fit),
+)
 
-# Step 10: NONMEM Compatibility
-# -------------------------
+# -----------------------------------------------------------------------------
+# 10. COMPARING NONMEM RESULTS
+# -----------------------------------------------------------------------------
 # Calculate NONMEM-style objective function values
 # This is useful for:
 # - Comparing with NONMEM results
 # - Historical compatibility
 # - Literature comparisons
-@info "NONMEM-style Objective Function Values:"
-@info "-------------------------------------"
-OFV_WITH_CONSTANT = -2 * loglikelihood(fpm)
-OFV_WITHOUT_CONSTANT = OFV_WITH_CONSTANT - nobs(pop) * log(2π)
-@info "NONMEM objective function values:" with_constant=OFV_WITH_CONSTANT without_constant=OFV_WITHOUT_CONSTANT
+OFV_WITH_CONSTANT = -2 * loglikelihood(warfarin_pkmodel_fit)
+OFV_WITHOUT_CONSTANT = OFV_WITH_CONSTANT - nobs(pop_pk) * log(2π)
+@info "NONMEM-Style Objective Function Values:" values = (
+    with_constant = OFV_WITH_CONSTANT,
+    without_constant=OFV_WITHOUT_CONSTANT,
+)
 
-# Educational Note:
-# ---------------
-@info "Key Takeaways from Model Fitting:"
-@info "1. Always examine initial estimates before fitting"
-@info "2. Use multiple fit statistics to assess model performance"
-@info "3. Look at both population and individual-level results"
-@info "4. Save your results for reproducibility"
-@info "5. Consider influential subjects for model refinement"
+# -----------------------------------------------------------------------------
+# TIPS AND BEST PRACTICES
+# -----------------------------------------------------------------------------
+# 1. Always examine initial estimates before fitting
+# 2. Use multiple fit statistics to assess model performance
+# 3. Look at both population and individual-level results
+# 4. Save your results for reproducibility
+# 5. Consider influential subjects for model refinement
 
 # Next Steps:
-# ----------
-@info "Next Steps:"
-@info "1. Detailed diagnostics (goodness-of-fit plots)"
-@info "2. Visual predictive checks"
-@info "3. Parameter uncertainty analysis"
-@info "4. Clinical trial simulations"
+# 1. Detailed diagnostics (goodness-of-fit plots)
+# 2. Visual predictive checks
+# 3. Parameter uncertainty analysis
+# 4. Clinical trial simulations
