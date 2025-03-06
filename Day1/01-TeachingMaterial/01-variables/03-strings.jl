@@ -32,7 +32,7 @@ quis maximus nunc rutrum non.
 # Julia offers multiple ways to combine strings
 
 greeting = "Hello"
-name = "Jake"
+name = "Jess"
 
 # Method 1: Using string() function
 string(greeting, ", ", name)    # Most flexible, can handle non-string types
