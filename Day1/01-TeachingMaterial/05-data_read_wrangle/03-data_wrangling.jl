@@ -2,23 +2,41 @@
 # Data Wrangling and Visualization - Part 3: Data Wrangling
 # =============================================================================
 
-using DataFrames, DataFramesMeta
+# Data wranging and manipulation are predominantly handled by functions 
+# available in base Julia and the following packages:
+# - DataFrames.jl: https://dataframes.juliadata.org/stable/
+# - DataFramesMeta.jl: https://juliadata.org/DataFramesMeta.jl/stable/
+
+# DataFrames.jl provides a set of tools for working with tabular data in Julia.
+# Its design and functionality are similar to functions from dplyr and data.table
+# (the latter by providing in-place functions) in R.
+
+# DataFramesMeta.jl provides macros that mirror DataFrames.jl functions with a
+# more convenient syntax, as well as additional functions to assist with
+# data manipulation and summarization.
+
+# Import the previous data reading example for demonstration
 include("01-data_reading.jl")  # This gives us the 'df' DataFrame
 
-@info "Starting data wrangling process..."
+# -----------------------------------------------------------------------------
+# 1. PACKAGES FOR VISUALIZING DATA
+# -----------------------------------------------------------------------------
+using DataFrames, DataFramesMeta
 
-# Step 1: Create a Working Copy
-# ---------------------------
+# -----------------------------------------------------------------------------
+# 2. CREATE A WORKING COPY
+# -----------------------------------------------------------------------------
+
 # In Julia, it is to mutate DataFrames in-place. Hence, it is often useful
 # to work with a copy of the original data
 df_processed = copy(df)
 @info "Created working copy of data"
 
-# Step 2: Fix Duplicate Time Points
-# -------------------------------
+# -----------------------------------------------------------------------------
+# 3. ASSESS AND FIX DUPLICATE TIME-POINTS
+# -----------------------------------------------------------------------------
 # Some subjects have duplicate time points for DVID = 1
-# For this dataset, the triple (ID, TIME, DVID) should define
-# a row uniquely, but
+# For this dataset, the triple (ID, TIME, DVID) should define a row uniquely
 nrow(df)
 nrow(unique(df, ["ID", "TIME", "DVID"]))
 
@@ -49,11 +67,11 @@ end
 # We can now confirm that all rows are unique defined by the index triple
 nrow(df) == nrow(unique(df_processed, ["ID", "TIME", "DVID"]))
 
-# Step 3: Add Derived Columns
-# -------------------------
-@info "Creating derived columns..."
-
+# -----------------------------------------------------------------------------
+# 4. ADD DERIVED COLUMNS
+# -----------------------------------------------------------------------------
 # Use @rtransform! macro for row-wise transformations
+# ! at the end of the functions means that it performs the action "in-place"
 # This is more efficient than applying operations to individual columns
 @rtransform! df_processed begin
     # Size-based scaling factors for PK parameters
@@ -68,24 +86,32 @@ nrow(df) == nrow(unique(df_processed, ["ID", "TIME", "DVID"]))
     :EVID = ismissing(:AMOUNT) ? 0 : 1       # Event type (0=obs, 1=dose)
 end
 
-@info "Created columns:" "FSZV: Volume scaling factor" "FSZCL: Clearance scaling factor" "DVNAME: Observation type" "CMT: Compartment number" "EVID: Event identifier"
+@info"""
+Created columns:
+FSZV: Volume scaling factor
+FSZCL: Clearance scaling factor
+DVNAME: Observation type
+CMT: Compartment number
+EVID: Event identifier"
+"""
 
-# Step 4: Remove Problematic Data
-# ----------------------------
+# -----------------------------------------------------------------------------
+# 5. REMOVE PROBLEMATIC DATA
+# -----------------------------------------------------------------------------
 # Remove subjects with '#' in their ID (typically test or invalid data)
-@info "Removing problematic subject IDs..."
 n_before = nrow(df_processed)
 @rsubset! df_processed begin
     !contains(:ID, "#")
 end
 n_removed = n_before - nrow(df_processed)
+
 @info "Removed rows with invalid subject IDs" n_removed
 
-# Step 5: Reshape Data from Long to Wide Format
-# -----------------------------------------
+# -----------------------------------------------------------------------------
+# 6. RESHAPE DATA FROM LONG TO WIDE FORMAT
+# -----------------------------------------------------------------------------
 # Convert from long format (multiple rows per time point)
 # to wide format (one row per time point)
-@info "Reshaping data from long to wide format..."
 df_wide = unstack(
     df_processed,
     Not([:DVID, :DVNAME, :DV]),  # Columns to keep as is
@@ -93,11 +119,20 @@ df_wide = unstack(
     :DV                          # Values to spread into new columns
 )
 
-# Step 6: Rename Columns for Clarity
-# -------------------------------
-@info "Renaming columns to meaningful names..."
-rename!(df_wide, :DV1 => :conc, :DV2 => :pca)
-@info "Columns renamed" DV1="conc (concentration)" DV2="pca (Prothrombin Complex Activity)"
+# -----------------------------------------------------------------------------
+# 7. RENAME COLUMNS
+# -----------------------------------------------------------------------------
+# Renaming columns to meaningful names...
+@rename! df_wide begin
+    :conc = :DV1
+    :pca = :DV2
+end
+
+@info"""
+Columns renamed:
+DV1 = conc (concentration)
+DV2 = pca (Prothrombin Complex Activity)
+"""
 
 # Display final data structure
 @info "Final data structure:" nrow(df_wide) ncol(df_wide) names(df_wide)

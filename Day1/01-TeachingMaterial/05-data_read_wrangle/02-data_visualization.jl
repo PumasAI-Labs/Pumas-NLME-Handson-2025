@@ -7,12 +7,12 @@
 # - AlgebraOfGraphics.jl: https://aog.makie.org/stable/
 # - CairoMakie.jl: https://docs.makie.org/stable/explanations/backends/cairomakie
 
-# AlgebraOfGraphics provides a set of tools for plotting data in Julia. Its 
+# AlgebraOfGraphics.jl provides a set of tools for plotting data in Julia. Its 
 # design and functionality are similar to theat of ggplot2 in R, whereby it 
 # involves the development of layers (data, mapping aesthetics, and geometrics)
 # to build a plot.
 
-# CairoMakie is the underlying plotting system for AlgebraOfGraphics.jl using a
+# CairoMakie.jl is the underlying plotting system for AlgebraOfGraphics.jl using a
 # Cairo backend to draw vector graphics to SVG and PNG.
 
 # Import the previous data reading example for demonstration
