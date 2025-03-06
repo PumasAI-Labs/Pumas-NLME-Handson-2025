@@ -1,6 +1,6 @@
-# Script: 02-data_wrangling.jl
-# Purpose: Process and prepare warfarin data for PK/PD modeling
-# ===========================================================
+# =============================================================================
+# Data Wrangling and Visualization - Part 3: Data Wrangling
+# =============================================================================
 
 using DataFrames, DataFramesMeta
 include("01-data_reading.jl")  # This gives us the 'df' DataFrame
