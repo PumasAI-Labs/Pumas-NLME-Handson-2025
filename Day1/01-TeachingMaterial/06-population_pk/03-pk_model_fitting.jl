@@ -21,7 +21,7 @@
 # - AIC/BIC: Model comparison criteria that penalize complexity
 
 # Import the previous code that create the Pumas population and Pumas model
-include("01-read_pumas_data.jl")  # This gives us the pop object
+include("01-read_pumas_data.jl")  # This gives us the pop_pk object
 include("02-pk_model.jl")  # This gives us the warfarin_pkmodel
 
 # -----------------------------------------------------------------------------
