@@ -47,7 +47,7 @@ initial_params = init_params(warfarin_pkmodel)
 # - Computes the likelihood
 warfarin_pkmodel_fit = fit(
     warfarin_pkmodel,              # The model we defined
-    pop_pk,                           # The population data
+    pop_pk,                        # The population data
     initial_params,                # Starting values
     FOCE(),                        # Estimation method
 )
@@ -157,7 +157,7 @@ OFV_WITH_CONSTANT = -2 * loglikelihood(warfarin_pkmodel_fit)
 OFV_WITHOUT_CONSTANT = OFV_WITH_CONSTANT - nobs(pop_pk) * log(2π)
 @info "NONMEM-Style Objective Function Values:" values = (
     with_constant = OFV_WITH_CONSTANT,
-    without_constant=OFV_WITHOUT_CONSTANT,
+    without_constant = OFV_WITHOUT_CONSTANT,
 )
 
 # -----------------------------------------------------------------------------

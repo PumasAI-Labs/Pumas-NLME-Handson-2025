@@ -1,12 +1,7 @@
-# Script: 04-pk_model_diagnostics_v1.jl
-# Purpose: Perform and interpret model diagnostics for the warfarin PK model
-# ==============================================================
+# =============================================================================
+# Population PK Modeling in Pumas - Part 4: Goodness-of-Fit Diagnostics
+# =============================================================================
 
-using Pumas, CairoMakie, DataFrames, DataFramesMeta, CategoricalArrays, Logging
-include("03-pk_model_fitting.jl")  # This gives us the fitted model 'fpm'
-
-# Introduction to Model Diagnostics
-# ------------------------------
 # Model diagnostics are crucial for validating our fitted model. They help us:
 # 1. Assess model assumptions
 # 2. Identify potential model misspecification
@@ -15,110 +10,131 @@ include("03-pk_model_fitting.jl")  # This gives us the fitted model 'fpm'
 # 5. Examine individual subject fits
 #
 # We'll explore several key diagnostic tools:
-# More details to be given on Day 2
 # - Visual Predictive Check (VPC): Compares simulated vs observed data
 # - Goodness-of-fit plots: Basic model performance checks
 # - Residual analysis: Identifies systematic errors
 # - Individual fits: Examines model performance for specific subjects
 
-@info "Starting Model Diagnostic Analysis"
-@info "================================"
+# Import the previous code that returns the fitted Pumas model (warfarin_pkmodel_fit)
+include("03-pk_model_fitting.jl")  # This gives us the fitted model 'fpm'
 
-# Step 1: Visual Predictive Check (VPC)
-# ----------------------------------
-# VPC is a powerful diagnostic that:
-# - Simulates many datasets from the model
-# - Compares observed data with simulation-based confidence intervals
-# - Helps assess model's predictive performance
-@info "Performing Visual Predictive Checks..."
+# -----------------------------------------------------------------------------
+# 1. PACKAGES FOR GOODNESS-OF-FIT DIAGNOSTICS
+# -----------------------------------------------------------------------------
+using Pumas
+using CairoMakie
+using DataFrames, DataFramesMeta
+using CategoricalArrays
+using Logging
 
-# VPC for concentration
-@info "Generating VPC for concentration..."
-@info "This shows how well the model predicts drug concentrations over time"
-vpc_res_conc = vpc(fpm; observations = [:conc], ensemblealg = EnsembleThreads())
+# -----------------------------------------------------------------------------
+# 2. STANDARD GOODNESS-OF-FIT DIAGNOSTICS
+# -----------------------------------------------------------------------------
+# Obtain individual- and population-predictions from the model fit
+warfarin_pkmodel_pred = inspect(warfarin_pkmodel_fit)
+warfarin_pkmodel_preddf = DataFrame(warfarin_pkmodel_pred)
 
-fig_conc = vpc_plot(vpc_res_conc,
-    simquantile_medians = true,
-    observations = true,
-    axis = (
-        xlabel = "Time (h)",
-        ylabel = "Warfarin Concentration (mg/L)",
-        title = "VPC - Warfarin Concentration"
+# Add descriptive values for SEX for stratification
+@transform! warfarin_pkmodel_preddf @astable begin
+    # Make SEX an ordered categorical variable
+    :SEX = categorical(:SEX; ordered = true)
+    # Assign new labels for each of the categories
+    :SEX = recode(:SEX, 0 => "Female", 1 => "Male", missing => "Missing")
+end
+# Obtain the levels of the Categorical variable
+levels(warfarin_pkmodel_preddf.SEX)
+
+# Goodness-of-fit diagnostics
+fig_gof_conc = goodness_of_fit(warfarin_pkmodel_pred,
+    observations = [:conc],
+    markercolor = :grey,
+    markersize = 6,
+    include_legend = true,
+    figurelegend = (
+        position = :b,
+        framevisible = false,
+        orientation = :vertical, 
+        tellheight = true,
+        tellwidth = false,
+        nbanks = 4
     ),
-    figurelegend = (position = :t, 
-                    orientation = :vertical, 
-                    tellheight = true, tellwidth = false, nbanks = 3),
     figure = (size = (800, 600),)
 )
-save("vpc_concentration.png", fig_conc)
-@info "Concentration VPC saved" path="vpc_concentration.png" details="Blue band: 95% CI for median, Pink bands: 95% CI for 5th/95th percentiles, Points: Observed data"
+# Save plot
+save(joinpath(@__DIR__, "gof_concentration.png"), fig_gof_conc)
 
-
-
-# Step 2: Basic Goodness-of-Fit Plots
-# --------------------------------
-@info "Generating Basic Goodness-of-Fit Plots..."
-@info "These plots help identify systematic model misspecification"
-
-# Get inspection data for plotting
-insp = inspect(fpm)
-insp_df = DataFrame(insp)
-
-# Add categorical sex for potential stratification
-@transform! insp_df begin
-    :SEXC = recode(:SEX, 0 => "female", 1 => "male")
-end
-
-@info "Basic goodness-of-fit plots for concentration"
-
-fig_gof_conc = goodness_of_fit(insp,
-                observations = [:conc],
-                markercolor = :grey,
-                markersize = 6,
-                include_legend = true,
-                figurelegend = (position = :t, 
-                                orientation = :vertical, 
-                                tellheight = true, tellwidth = false, nbanks = 4),
-                figure = (size = (800, 600),))
-
-save("gof_concentration.png", fig_gof_conc)
-
-# Step 4: Individual Subject Fits
-# ---------------------------
-@info "Generating Individual Subject Fits..."
-@info "These show how well the model describes individual subjects"
-sf_v = subject_fits(insp,
+# -----------------------------------------------------------------------------
+# 3. INDIVIDUAL CONCENTRATION TIME-COURSES
+# -----------------------------------------------------------------------------
+# Plot individual observed time-courses with individual- and population-
+# predictions
+fig_id_conc = subject_fits(warfarin_pkmodel_pred,
     separate = true,
-    ids = unique(insp_df.id),
+    ids = unique(warfarin_pkmodel_preddf.id),
     observations = [:conc],
+    include_legend = true,
+    figurelegend = (
+        position = :b,
+        framevisible = false,
+        orientation = :vertical, 
+        tellheight = true,
+        tellwidth = false,
+        nbanks = 4
+    ),
     facet = (combinelabels = true,),
     paginate = true # this will generate a vector of plots
                     # to avoid that each plot gets too small
 )
 # We can render all plots in one go by calling display on the vector
-display.(sf_v)
+display.(fig_id_conc)
 
-# Educational Note:
-# ---------------
-@info "Key Takeaways from Diagnostics:"
-@info "1. VPCs show overall predictive performance"
-@info "2. Prediction plots reveal systematic bias"
-@info "3. Residual plots help identify specific types of model misspecification"
-@info "4. Individual fits show how well the model describes each subject"
+# -----------------------------------------------------------------------------
+# 4. VISUAL PREDICTIVE CHECK
+# -----------------------------------------------------------------------------
+# VPC is a powerful diagnostic that:
+# - Simulates many datasets from the model
+# - Compares observed data with simulation-based confidence intervals
+# - Helps assess model's predictive performance
+
+# Perform simulation for VPC (1000 replicates of index dataset)
+vpc_res_conc = vpc(
+    warfarin_pkmodel_fit;
+    observations = [:conc],
+    ensemblealg = EnsembleThreads(),
+    samples = 1000,
+    quantiles = (0.05, 0.5, 0.95),
+)
+
+# Generate figure for VPC
+fig_vpc = vpc_plot(
+    vpc_res_conc,
+    simquantile_medians = true,
+    observations = true,
+    axis = (
+        xlabel = "Time After Dose (hr)",
+        ylabel = "Warfarin Concentration (mg/L)",
+    ),
+    include_legend = true,
+    figurelegend = (
+        position = :b,
+        framevisible = false,
+        orientation = :vertical, 
+        tellheight = true,
+        tellwidth = false,
+        nbanks = 3
+    ),
+    figure = (size = (800, 600),)
+)
+# Save plot
+save(joinpath(@__DIR__, "vpc_concentration.png"), fig_vpc)
+
+# -----------------------------------------------------------------------------
+# TIPS AND BEST PRACTICES
+# -----------------------------------------------------------------------------
+# 1. Prediction plots reveal systematic bias
+# 2. Residual plots help identify specific types of model misspecification
+# 3. Individual fits show how well the model describes each subject
+# 4. VPCs show overall predictive performance
 
 # Next Steps:
-# ----------
-@info "Next Steps:"
-@info "1. Examine uncertainty in parameter estimates (08-uncertainty_quantification.jl)"
-@info "2. Use the model for simulations (09-simulation.jl)"
-@info "3. Consider model refinements if diagnostics reveal issues"
-
-# Execute if this script is run directly
-if abspath(PROGRAM_FILE) == @__FILE__
-    @info "Script completed successfully!"
-    @info "Review the generated diagnostic plots:" files=[
-        "vpc_concentration.png",
-        "predictions.png",
-        "individual_fits.png"
-    ]
-end
+# 1. Examine uncertainty in parameter estimates (Day 2/01-pk_model_uncertainty.jl)
