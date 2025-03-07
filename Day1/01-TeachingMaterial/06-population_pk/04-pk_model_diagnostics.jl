@@ -15,8 +15,8 @@
 # - Residual analysis: Identifies systematic errors
 # - Individual fits: Examines model performance for specific subjects
 
-# Import the previous code that returns the fitted Pumas model (warfarin_pkmodel_fit)
-include("03-pk_model_fitting.jl")  # This gives us the fitted model 'fpm'
+# Import the previous code that returns the fitted Pumas model
+include("03-pk_model_fitting.jl")  # This gives us the fitted model, warfarin_pkmodel_fit
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES FOR GOODNESS-OF-FIT DIAGNOSTICS
