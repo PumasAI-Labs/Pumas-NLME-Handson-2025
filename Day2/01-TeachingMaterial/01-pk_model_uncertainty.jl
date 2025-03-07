@@ -58,6 +58,14 @@ coeftable(warfarin_pkmodel_bootstrap; level = 0.95)
 # -----------------------------------------------------------------------------
 # 3. SAMPLING IMPORTANCE RESAMPLING (SIR)
 # -----------------------------------------------------------------------------
+# Sampling Importance Resampling:
+# - SIR accepts the number of samples from the proposal (samples) and the
+# number of resamples (resamples)
+# - It is suggested that samples is at least 5 times larger than resamples to have
+# sufficient samples to resample from
+# - SIR draws its first samples from a truncated multivariate normal distribution
+# from the variance-covariance matrix obtained from infer
+# Perform SIR
 warfarin_pkmodel_sir = infer(warfarin_pkmodel_fit, SIR(samples = 1000, resamples = 200))
 
 # Obtain raw results from SIR
