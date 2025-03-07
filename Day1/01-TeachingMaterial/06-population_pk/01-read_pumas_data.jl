@@ -61,17 +61,17 @@ pop_pk = read_pumas(
 # 3. EXAMINING A PUMAS POPULATION OBJECT
 # -----------------------------------------------------------------------------
 # Determine number of subjects in populations
-length(pop)
+length(pop_pk)
 
 # View the population object as a DataFrame
-df_pop = DataFrame(pop)
-vscodedisplay(df_pop)
+df_pop_pk = DataFrame(pop_pk)
+vscodedisplay(df_pop_pk)
 
 # -----------------------------------------------------------------------------
 # 4. EXAMINING A INDIVIDUAL DATA FROM PUMAS POPULATION OBJECT
 # -----------------------------------------------------------------------------
 # Examine data for the first individual
-pop[1]
+pop_pk[1]
 
 # -----------------------------------------------------------------------------
 # 5. DATA VERIFICATION
@@ -80,7 +80,7 @@ pop[1]
 original_subjects = length(unique(df_wide.ID))
 
 # Number of individuals in the Pumas population object
-pumas_subjects = length(pop)
+pumas_subjects = length(pop_pk)
 
-# Note: This Population object (pop) will be used in subsequent scripts
+# Note: This Population object (pop_pk) will be used in subsequent scripts
 # for model fitting and simulation 
