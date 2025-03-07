@@ -17,8 +17,8 @@
 # - https://link.springer.com/article/10.1007/s10928-016-9487-8
 
 # Import the previous code that returns the fitted Pumas model
-include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "06-population_pk",
-    "03-pk_model_fitting.jl")) 
+include(joinpath("..","..", "..", "Day1", "01-TeachingMaterial",
+    "06-population_pk", "03-pk_model_fitting.jl")) 
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES FOR PARAMETER UNCERTAINTY
@@ -49,7 +49,7 @@ warfarin_pkmodel_varcov_hessian = infer(warfarin_pkmodel_fit; sandwich_estimator
 warfarin_pkmodel_bootstrap = infer(warfarin_pkmodel_fit, Bootstrap(samples = 100))
 
 # Obtain raw results from bootstrap
-warfarin_pkmodel_bootstrap_results = DataFrame(warfarin_pkmodel_boostrap.vcov)
+warfarin_pkmodel_bootstrap_results = DataFrame(warfarin_pkmodel_bootstrap.vcov)
 
 # Return a DataFrame of parameter estimates and precision from bootstrap
 # Provide 95% confidence intervals

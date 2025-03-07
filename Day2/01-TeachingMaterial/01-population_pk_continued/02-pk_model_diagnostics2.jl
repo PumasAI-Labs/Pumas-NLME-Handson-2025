@@ -10,8 +10,8 @@
 # output from inspect. This gives you completely control over the plotting.
 
 # Import the previous code that returns the fitted Pumas model
-include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "06-population_pk",
-    "03-pk_model_fitting.jl")) 
+include(joinpath("..","..", "..", "Day1", "01-TeachingMaterial",
+    "06-population_pk", "03-pk_model_fitting.jl")) 
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES FOR GOODNESS-OF-FIT DIAGNOSTICS
