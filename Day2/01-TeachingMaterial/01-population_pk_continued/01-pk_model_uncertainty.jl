@@ -24,6 +24,8 @@ include(joinpath("..","..", "..", "Day1", "01-TeachingMaterial",
 # 1. PACKAGES FOR PARAMETER UNCERTAINTY
 # -----------------------------------------------------------------------------
 using Pumas
+import Logging
+Logging.disable_logging(Logging.Warn)
 
 # -----------------------------------------------------------------------------
 # 2. ASYMPTOTIC CONFIDENCE INTERVALS
