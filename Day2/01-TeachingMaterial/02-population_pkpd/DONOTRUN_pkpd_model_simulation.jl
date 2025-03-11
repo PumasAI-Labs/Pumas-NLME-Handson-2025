@@ -1,5 +1,5 @@
 using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging
-include("04-pkpd_model_fitting.jl")    # This gives us the fitted model 'fpm'
+include("02-pkpd_model.jl")    # This gives us the fitted model 'fpm'
 include("06-pkpd_model_uncertainty_quantification.jl")  # This gives us 'bts_inf'
 
 """
