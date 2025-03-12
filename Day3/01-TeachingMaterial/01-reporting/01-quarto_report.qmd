@@ -72,8 +72,43 @@ The analysis dataset contains `{julia} nid` individuals and `{julia} nobs` non-m
 
 A summary of the concentrations over time is provided below:
 
+::: {.panel-tabset}
+
+## Linear Scale
+
 ```{julia}
-# Plot concentration versus time
+# Plot concentration (linear scale) versus time
+# Create a modified version of the dataset where
+# missing observations are removed
+plot_df = dropmissing(po_sad,:dv)
+
+# Plot concentrations versus time
+p_conc_scatter = data(plot_df)*
+    mapping(
+        :time,
+        :dv,
+        group = "id" => nonnumeric,
+        color = "doselevel" => nonnumeric => "Dose (mg)",
+    )*
+    visual(Lines)
+draw(p_conc_scatter;
+    axis = (;
+        ylabel = "Concentration (mg/L)",
+        xlabel = "Time After Dose (hours)",
+        yticks = LinearTicks(10),
+        xticks = LinearTicks(7),
+    ),
+    legend = (;
+        position = :bottom,
+        framevisible = false
+    )
+)
+```
+
+## Log Scale
+
+```{julia}
+# Plot concentration (log-scale) versus time
 # Create a modified version of the dataset where
 # missing observations are removed
 plot_df = dropmissing(po_sad,:dv)
@@ -102,7 +137,9 @@ draw(p_conc_scatter;
 )
 ```
 
-`<Provide an interpretation of the plot>`
+:::
+
+`<Provide an interpretation of the plots>`
 
 # Population PK Modeling
 
