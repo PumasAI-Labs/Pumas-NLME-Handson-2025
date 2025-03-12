@@ -1,0 +1,138 @@
+---
+title: "Reporting in Quarto"
+engine: julia
+execute:
+  error: false
+author:
+  - Jessica Wojciechowski
+format:
+  html:
+    self-contained: true
+    self-contained-math: true
+    anchor-sections: true
+    theme: default
+    toc: true
+    toc-depth: 4
+    toc-expand: 2
+    toc-location: left
+    toc-title: Contents
+    number-sections: true
+fig-format: svg
+fig-width: 7
+fig-height: 5
+---
+
+```{julia}
+#| echo: false
+#| output: false
+# Load packages into the environment
+using Pumas
+using AlgebraOfGraphics, CairoMakie
+using DataFrames, DataFramesMeta
+using Random
+using PharmaDatasets
+using Chain
+```
+
+# Analysis Dataset
+
+The dataset for analysis was `po_sad_1` obtained from the `PharmaDatasets` package:
+
+```{julia}
+# Load analysis dataset from PharmaDatasets
+po_sad = dataset("po_sad_1")
+```
+
+The analysis dataset was converted to a Pumas population:
+
+```{julia}
+# Convert to Pumas Population using read_pumas:
+
+
+```
+
+# Exploratory Data Analysis
+
+```{julia}
+#| output: false
+#| echo: false
+# Summary of the analysis population
+# Number of individuals
+nid = length(unique(po_sad.id))
+
+# Number of observations
+nobs = @chain po_sad begin
+    dropmissing(:dv)
+    getproperty(:dv)
+    length
+end
+```
+
+The analysis dataset contains `{julia} nid` individuals and `{julia} nobs` non-missing observations.
+
+A summary of the concentrations over time is provided below:
+
+```{julia}
+# Plot concentration versus time
+# Create a modified version of the dataset where
+# missing observations are removed
+plot_df = dropmissing(po_sad,:dv)
+
+# Plot concentrations versus time
+p_conc_scatter = data(plot_df)*
+    mapping(
+        :time,
+        :dv,
+        group = "id" => nonnumeric,
+        color = "doselevel" => nonnumeric => "Dose (mg)",
+    )*
+    visual(Lines)
+draw(p_conc_scatter;
+    axis = (;
+        ylabel = "Concentration (mg/L)",
+        xlabel = "Time After Dose (hours)",
+        yscale = Makie.pseudolog10,
+        yticks = [0.1,0.3,1,3,10,30,100,300,1000,3000,10000],
+        xticks = LinearTicks(7),
+    ),
+    legend = (;
+        position = :bottom,
+        framevisible = false
+    )
+)
+```
+
+`<Provide an interpretation of the plot>`
+
+# Population PK Modeling
+
+## Pumas Model Code
+
+A 1-compartment model with first-order absorption and linear elimination was evaluated. Inter-individual variability was include on clearance and central volume of distribution assuming log-normal distributions. A combined additive and proportional residual error model was evaluated.
+
+```{julia}
+# Pumas model code for 1-compartment model
+
+```
+
+## Parameter Estimation
+
+## Estimating Parameter Uncertainty
+
+## Model Diagnostics
+
+A summary of the model heuristics is provided below:
+
+```{julia}
+# Print the following model output:
+# Minimization status, loglikelihood, AIC, BIC, number of 
+# observations, number of optimized parameters in the model,
+# etc
+
+```
+
+## Final Parameter Estimates
+
+## Goodness-of-Fit Diagnostics
+
+## Visual Predictive Check
