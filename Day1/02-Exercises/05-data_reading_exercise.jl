@@ -13,6 +13,9 @@ Using the PharmaDatasets package:
 4. Check for missing values in each column
 """
 
+using PharmaDatasets
+po_sad = dataset("po_sad_1")
+vscodedisplay(po_sad)
 # Your code here
 
 

@@ -259,3 +259,101 @@ nca_1_2mgkg / nca_1_1_half_mgkg
 
 # Exercises
 # - Simulate with alternative regimens
+
+#### DELETE LATER ###
+s1 = Subject(id="Vijay",
+    events=DosageRegimen(3.0, time=0.0, cmt=1, addl=6, ii=24.0, route=NCA.EV),
+    covariates=(; FSZV=1.0, FSZCL=1.2),
+    observations=(; conc=nothing,))
+sims = simobs(warfarin_pkmodel, 
+            [s1], 
+            coef(warfarin_pkmodel_fit), 
+            simulate_error = false,
+            obstimes = 0.0:0.1:192.0)
+#
+s2 = Subject(sims[1])
+
+s2nca = NCASubject(s2; observations = :conc)
+NCA.auc(s2nca, interval = (0,4))
+
+
+##sim_plot(sims)            
+Subject(id = 1)
+pop100 = map(subj -> Subject(id=subj,
+        events=DosageRegimen(3.0, time=0.0, cmt=1, addl=6, ii=24.0),
+        covariates=(; FSZV=1.0, FSZCL=1.2),
+        observations=(; conc=nothing,)),
+    1:100)
+#
+sims100 = [simobs(warfarin_pkmodel, 
+            pop100, 
+            coef(warfarin_pkmodel_fit), 
+            simulate_error = false,
+            obstimes = 0.0:0.1:192.0) for i in 1:100]
+#
+
+sim_plot(sims100[1])        
+
+using Pumas
+
+# Define the model
+m1 = @model begin
+  @metadata begin
+    desc = "INTRAVENOUS BOLUS STUDY"
+    timeu = u"hr" # hour
+  end
+
+  @param begin
+    tvcl ∈ RealDomain(lower=0) # Clearance (L/hr)
+    tvv ∈ RealDomain(lower=0)  # Volume of distribution (L)
+    Ω ∈ PDiagDomain(2)         # Random effects
+    σ_prop ∈ RealDomain(lower=0) # Proportional error
+    σ_add ∈ RealDomain(lower=0)  # Additive error
+  end
+
+  @random begin
+    η ~ MvNormal(Ω)
+  end
+
+  @pre begin
+    CL = tvcl * exp(η[1])
+    V = tvv * exp(η[2])
+  end
+
+  @dynamics begin
+    Central' = - (CL/V) * Central
+  end
+
+  @derived begin
+    cp = @. Central / V
+    dv ~ @. Normal(cp, sqrt(σ_prop^2 * cp^2 + σ_add^2))
+  end
+
+  @observed begin
+    conc := @. Central/V
+    mynca := @nca conc
+    auc = NCA.auc(mynca)
+    cmax = NCA.cmax(mynca)
+    half_life = NCA.thalf(mynca)
+  end
+end
+
+# Define the subject
+s3 = Subject(id=1, events=DosageRegimen(100, time=0, route = NCA.IVBolus))
+
+# Define the population parameters
+param = (
+  tvcl = 1.0,  # Initial estimate for clearance
+  tvv = 10.0,  # Initial estimate for volume
+  Ω = Diagonal([0.09, 0.09]), # Variability for CL and V
+  σ_prop = 0.3, # Proportional error
+  σ_add = 0.32  # Additive error
+)
+
+# Simulate the model
+sim = simobs(m1, 
+            s3, 
+            param,
+            obstimes = 0:0.1:48)
+
+simobs(warfarin_pkmodel_sir, samples = 100)

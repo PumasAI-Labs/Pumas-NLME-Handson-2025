@@ -52,6 +52,21 @@ warfarin_pkmodel_fit = fit(
     FOCE(),                        # Estimation method
 )
 
+w2_fix_lag = fit(
+    warfarin_pkmodel,              # The model we defined
+    pop_pk,                        # The population data
+    coef(warfarin_pkmodel_fit),                # Starting values
+    FOCE(), 
+    constantcoef = (:θlag,)                       # Estimation method
+)
+
+## model comparison
+
+compare_estimates(;warfarin_pkmodel_fit, w2_fix_lag)
+lrtest(w2_fix_lag, warfarin_pkmodel_fit)
+outerjoin(metrics_table(w2_fix_lag), 
+        metrics_table(warfarin_pkmodel_fit), 
+        on = :Metric, makeunique=true)
 # Obtain parameter uncertainty
 warfarin_pkmodel_varcov = infer(warfarin_pkmodel_fit)
 
@@ -99,6 +114,8 @@ warfarin_pkmodel_fit = fit(
 
 # Obtain a table of the numerical diagnostics for the model
 metrics = metrics_table(warfarin_pkmodel_fit)
+
+aic(warfarin_pkmodel_fit)
 
 # -----------------------------------------------------------------------------
 # 6. OBTAINING EMPIRICAL BAYES ESTIMATES

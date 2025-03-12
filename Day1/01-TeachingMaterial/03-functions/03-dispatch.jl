@@ -179,3 +179,25 @@ methods(string)    # Julia's string function has many methods
 # - methods(AUC) to see all methods
 # - @which AUC(times, population) to see which method is called
 # - methodswith(Vector) to see methods that accept Vector arguments
+
+
+function add_2_numbers(a, b)
+    return a + b
+end
+
+add_2_numbers(1, 2.0)
+
+function add_two_numbers(a::Int, b::Int)
+    return a + b
+end
+
+function add_two_numbers(a::Float64, b::Float64)
+    return a + b
+end
+
+
+function add_two_numbers(a::Int64, b::Float64)
+    return a + b
+end
+
+add_two_numbers(1, 2.0)

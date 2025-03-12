@@ -28,6 +28,7 @@ Using the variables you created above:
 # Your code here
 
 
+
 @info """
 Exercise 3: String Manipulation
 -----------------------------

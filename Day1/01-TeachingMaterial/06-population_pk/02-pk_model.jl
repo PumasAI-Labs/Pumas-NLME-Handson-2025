@@ -55,7 +55,10 @@ warfarin_pkmodel = @model begin
     end
 
     # Declare which covariates from the data will be used in the model
-    @covariates FSZV FSZCL
+    @covariates begin
+        FSZV 
+        FSZCL
+    end
 
     # Calculate individual parameters using population parameters, random effects,
     # and covariates
@@ -92,5 +95,6 @@ warfarin_pkmodel = @model begin
         conc ~ @. Normal(cp, sqrt((σ_prop * cp)^2 + σ_add^2))  # Combined error model
     end
 end
+
 
 # Note: This model will be used in subsequent scripts for fitting and simulation
