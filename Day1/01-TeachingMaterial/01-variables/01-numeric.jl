@@ -68,14 +68,6 @@ x^2      # Exponentiation: Raises x to the power of 2
 sqrt(2)    # Traditional function call
 √2         # Special Unicode syntax (type \sqrt + TAB)
 
-# -----------------------------------------------------------------------------
-# 5. SPECIAL NUMERIC TYPES
-# -----------------------------------------------------------------------------
-# Julia has built-in support for rational and complex numbers
-
-5 // 37    # Rational number (exact fraction representation)
-1 + 2im    # Complex number (im is the imaginary unit)
-
 # Note: Try these examples in the REPL to see their results!
 # You can get more information about any type using the help mode
 # Type ? followed by the type name in the REPL (e.g., ?Int64)
