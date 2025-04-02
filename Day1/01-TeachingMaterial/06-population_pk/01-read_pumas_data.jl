@@ -22,6 +22,9 @@ Required data elements for Pumas Population:
 # This gives us the df_wide DataFrame
 include(joinpath("..","05-data_read_wrangle","03-data_wrangling.jl"))
 
+# Display the dataset:
+vscodedisplay(df_wide)
+
 # -----------------------------------------------------------------------------
 # 1. PACKAGES FOR CREATING PUMAS POPULATION OBJECT
 # -----------------------------------------------------------------------------
