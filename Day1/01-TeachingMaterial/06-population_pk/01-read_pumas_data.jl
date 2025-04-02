@@ -76,6 +76,12 @@ vscodedisplay(df_pop_pk)
 # Examine data for the first individual
 pop_pk[1]
 
+# Examine subject fields:
+subj = pop_pk[1]
+subj.events       # DataFrame of dosing events
+subj.observations # DataFrame of observation rows
+subj.covariates   # NamedTuple of constant covariates
+
 # -----------------------------------------------------------------------------
 # 5. DATA VERIFICATION
 # -----------------------------------------------------------------------------
