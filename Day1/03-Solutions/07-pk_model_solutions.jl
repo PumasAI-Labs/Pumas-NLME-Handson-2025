@@ -1,5 +1,5 @@
 # =============================================================================
-# Population PK Modeling in Pumas - Hands-on
+# Population PK Modeling in Pumas - Hands-on Solution
 # =============================================================================
 
 # Import the previous code that returns the fitted Pumas model
