@@ -53,6 +53,15 @@ fig_gof_conc = goodness_of_fit(warfarin_pkmodel_pred,
 # Save plot
 save(joinpath(@__DIR__, "gof_concentration.png"), fig_gof_conc)
 
+
+# Each subpanel of the plot is constructed from separate functions 
+# of which can also be used to generate the subpanels separately
+observations_vs_predictions(warfarin_pkmodel_pred)
+observations_vs_ipredictions(warfarin_pkmodel_pred)
+wresiduals_vs_time(warfarin_pkmodel_pred)
+iwresiduals_vs_ipredictions(warfarin_pkmodel_pred)
+
+
 # -----------------------------------------------------------------------------
 # 3. INDIVIDUAL CONCENTRATION TIME-COURSES
 # -----------------------------------------------------------------------------
