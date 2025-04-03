@@ -182,20 +182,23 @@ draw(p_npde_scatter + p_npde_linear + p_npde_loess;
 # - Compares observed data with simulation-based confidence intervals
 # - Helps assess model's predictive performance
 
+# Pumas uses local quantile regression instead of binning. The approach is inspired by
+# https://ascpt.onlinelibrary.wiley.com/doi/full/10.1002/psp4.12319
+
 # Perform simulation for VPC (1000 replicates of index dataset)
 vpc_res_conc = vpc(
     warfarin_pkmodel_fit;
     observations = [:conc],
-    ensemblealg = EnsembleThreads(),
+    ensemblealg = EnsembleThreads(), # to specify the parallelization method to be used
     samples = 1000,
-    quantiles = (0.05, 0.5, 0.95),
+    quantiles = (0.05, 0.5, 0.95),  # to specify the quantiles for which the VPC will compute PI
 )
 
 # Generate figure for VPC
 fig_vpc = vpc_plot(
     vpc_res_conc,
-    simquantile_medians = true,
-    observations = true,
+    simquantile_medians = true,  # to include the medians of the simulated quantiles
+    observations = true,  # to include the observed data
     axis = (
         xlabel = "Time After Dose (hr)",
         ylabel = "Warfarin Concentration (mg/L)",
@@ -216,68 +219,17 @@ save(joinpath(@__DIR__, "vpc_concentration.png"), fig_vpc)
 
 
 # -----------------------------------------------------------------------------
-# 3. ADDITIONAL VPC OPTIONS
+# 9. ADDITIONAL VPC OPTIONS
 # -----------------------------------------------------------------------------
-# More on VPCs
-# Pumas uses local quantile regression instead of binning. The approach is inspired by
-# https://ascpt.onlinelibrary.wiley.com/doi/full/10.1002/psp4.12319
-
-# Redo default vpc
-vpc_res_conc = vpc(warfarin_pkmodel_fit)
-
-# Generate figure for VPC
-vpc_plot(
-    vpc_res_conc,
-    simquantile_medians = true,
-    observations = true,
-    axis = (
-        xlabel = "Time After Dose (hr)",
-        ylabel = "Warfarin Concentration (mg/L)",
-    ),
-    include_legend = true,
-    figurelegend = (
-        position = :b,
-        framevisible = false,
-        orientation = :vertical, 
-        tellheight = true,
-        tellwidth = false,
-        nbanks = 3
-    ),
-    figure = (size = (800, 600),)
-)
-
-# Adjust the bandwidth for local quantile regression
-# The neightborhood of the local regression is controlled by the bandwidth parameter
-vpc_res_conc_bw10 = vpc(
-    warfarin_pkmodel_fit;
-    bandwidth = 10.0,
-)
-
-vpc_plot(
-    vpc_res_conc_bw10,
-    simquantile_medians = true,
-    observations = true,
-    axis = (
-        xlabel = "Time After Dose (hr)",
-        ylabel = "Warfarin Concentration (mg/L)",
-    ),
-    include_legend = true,
-    figurelegend = (
-        position = :b,
-        framevisible = false,
-        orientation = :vertical, 
-        tellheight = true,
-        tellwidth = false,
-        nbanks = 3
-    ),
-    figure = (size = (800, 600),)
-)
-
 # An alternative way to account for subject heterogeneity is to
 # stratify the plot based on discrete covariates.
 vpc_res_conc_by_sex = vpc(
     warfarin_pkmodel_fit;
-    stratify_by = [:SEX]
+    observations = [:conc],
+    ensemblealg = EnsembleThreads(), 
+    samples = 1000,
+    quantiles = (0.05, 0.5, 0.95),  
+    stratify_by = [:SEX]  # to stratify by sex
 )
 
 vpc_plot(
@@ -301,6 +253,70 @@ vpc_plot(
 )
 
 
+# Prediction-corrected Visual Predictive Check (pcVPC):
+pcvpc_res_conc = vpc(
+    warfarin_pkmodel_fit;
+    observations = [:conc],
+    ensemblealg = EnsembleThreads(), 
+    samples = 1000,
+    quantiles = (0.05, 0.5, 0.95),  
+    prediction_correction = true    # to enable prediction correction
+)
+
+vpc_plot(
+    pcvpc_res_conc,
+    simquantile_medians = true,
+    observations = true,
+    axis = (
+        xlabel = "Time After Dose (hr)",
+        ylabel = "Prediction-corrected Concentration (mg/L)",
+    ),
+    include_legend = true,
+    figurelegend = (
+        position = :b,
+        framevisible = false,
+        orientation = :vertical, 
+        tellheight = true,
+        tellwidth = false,
+        nbanks = 3
+    ),
+    figure = (size = (800, 600),)
+)
+
+
+# Adjust the bandwidth for local quantile regression
+# The neightborhood of the local regression is controlled by the bandwidth parameter
+vpc_res_conc_bw10 = vpc(
+    warfarin_pkmodel_fit;
+    observations = [:conc],
+    ensemblealg = EnsembleThreads(), 
+    samples = 1000,
+    quantiles = (0.05, 0.5, 0.95),  
+    bandwidth = 10.0,
+)
+
+vpc_plot(
+    vpc_res_conc_bw10,
+    simquantile_medians = true,
+    observations = true,
+    axis = (
+        xlabel = "Time After Dose (hr)",
+        ylabel = "Warfarin Concentration (mg/L)",
+    ),
+    include_legend = true,
+    figurelegend = (
+        position = :b,
+        framevisible = false,
+        orientation = :vertical, 
+        tellheight = true,
+        tellwidth = false,
+        nbanks = 3
+    ),
+    figure = (size = (800, 600),)
+)
+
+
+
 # -----------------------------------------------------------------------------
 # TIPS AND BEST PRACTICES
 # -----------------------------------------------------------------------------
@@ -308,6 +324,3 @@ vpc_plot(
 # 2. Residual plots help identify specific types of model misspecification
 # 3. Individual fits show how well the model describes each subject
 # 4. VPCs show overall predictive performance
-
-# Next Steps:
-# 1. Examine uncertainty in parameter estimates (Day 2/01-pk_model_uncertainty.jl)
