@@ -1,5 +1,5 @@
 # =============================================================================
-# Population PK Modeling in Pumas - Part 4: Goodness-of-Fit Diagnostics (1)
+# Population PK Modeling in Pumas - Part 4: Goodness-of-Fit Diagnostics
 # =============================================================================
 
 # Model diagnostics are crucial for validating our fitted model. They help us:
