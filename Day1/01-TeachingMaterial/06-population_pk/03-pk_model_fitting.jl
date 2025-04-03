@@ -37,6 +37,18 @@ using Pumas, Serialization, Logging, PumasUtilities
 # Returns a NamedTuple
 initial_params = init_params(warfarin_pkmodel)
 
+# The initial parameters can also be defined outside the model, as follows: 
+initial_params = (
+    θCL = 0.134,
+    θVC = 8.11,
+    θtabs = 0.523,
+    θlag = 0.1,
+    pk_Ω =  Diagonal([0.09, 0.09]),
+    tabs_ω = 0.09,
+    σ_prop = 0.00752,
+    σ_add = 0.0661 
+    )
+
 # -----------------------------------------------------------------------------
 # 3. ESTIMATING PARAMETERS
 # -----------------------------------------------------------------------------
@@ -50,7 +62,11 @@ warfarin_pkmodel_fit = fit(
     pop_pk,                        # The population data
     initial_params,                # Starting values
     FOCE(),                        # Estimation method
-)
+) 
+
+# Convergence trace: 
+# Plot the log-likelihood and gradient norm over each iteration
+convergence_trace(warfarin_pkmodel_fit)
 
 # Obtain parameter uncertainty
 warfarin_pkmodel_varcov = infer(warfarin_pkmodel_fit)
@@ -60,6 +76,7 @@ warfarin_pkmodel_varcov = infer(warfarin_pkmodel_fit)
 # -----------------------------------------------------------------------------
 # Look at the estimated parameters and their uncertainty
 coeftable(warfarin_pkmodel_varcov)
+coefficients_table(warfarin_pkmodel_fit,warfarin_pkmodel_varcov)  # Contains metadata
 
 # -----------------------------------------------------------------------------
 # 4. MODEL REFINEMENT
@@ -73,6 +90,16 @@ warfarin_pkmodel_fit = fit(
     pop_pk,
     coef(warfarin_pkmodel_fit),  # Use previous parameter estimates
     FOCE(),
+)
+
+# Example: fixing a parameter:
+# Fix IIV on tabs to 0.5
+warfarin_pkmodel_fit_fix = fit(
+    warfarin_pkmodel,
+    pop_pk,
+    (; initial_params..., tabs_ω = 0.5), # Replace initial value for tabs_ω by 0.5 
+    FOCE(),
+    constantcoef = (:tabs_ω,),  # Fix the tabs_ω parameter
 )
 
 # -----------------------------------------------------------------------------
