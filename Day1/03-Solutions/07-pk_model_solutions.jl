@@ -1,10 +1,13 @@
-# Purpose: Solutions for Hands-on based on the Warfarin PK Model
-# ==============================================================
+# =============================================================================
+# Population PK Modeling in Pumas - Hands-on
+# =============================================================================
 
-using Pumas
+# Import the previous code that returns the fitted Pumas model
+include(joinpath("..","01-TeachingMaterial","06-population_pk","03-pk_model_fitting.jl"))  # This gives us the fitted base model, warfarin_pkmodel_fit
 
-# Exercise 1: Initial Parameter Exploration
-# --------------------------------------
+# -----------------------------------------------------------------------------
+# 1. Exercise 1: Initial Parameter Exploration
+# -----------------------------------------------------------------------------
 
 @info """
 Exercise 1: Initial Parameter Exploration
@@ -19,34 +22,29 @@ Using the warfarin PK model:
 4. Document which changes lead to better/worse fits
 """
 
-include(joinpath(@__DIR__, "..","01-TeachingMaterial","01-read_pumas_data.jl"))  # This gives us the 'pop' object
-include(joinpath(@__DIR__, "..","01-TeachingMaterial","02-pk_model.jl") )      # This gives us the 'warfarin_pkmodel'
-include(joinpath(@__DIR__, "..","01-TeachingMaterial","03-pk_model_fitting.jl") )      # This gives us the 'warfarin_pkmodel'
-
-# First version of the model:
+# Initial paramters from the base model:
 initial_params = init_params(warfarin_pkmodel)
-coefficients_table(fpm) # Table of parameter estimates with metadata 
 
-# Re-run with new initial values:
+# New fit with new initial values:
 fit_newinit = fit(
     warfarin_pkmodel,              # The model we defined
     pop_pk,                        # The population data
     (;                             # Starting values
         initial_params...,
-        lag_ω = 0.0, 
-        pop_CL = 0.201, 
-        #pop_V = 12.04,
-        #pk_Ω =  Diagonal([0.1, 0.1, 0.1]),
+        θCL = 0.201, 
+        #θVC = 16,
+        #pk_Ω =  Diagonal([0.3, 0.3]),
     ),
     FOCE(),                        # Estimation method
-    constantcoef = (:lag_ω,)      # Variability on lags doesn't work
 )
 
 coefficients_table(fit_newinit) # Table of parameter estimates with metadata 
-vscodedisplay(compare_estimates(;fpm, fit_newinit))
+vscodedisplay(compare_estimates(;warfarin_pkmodel_fit, fit_newinit))
 
-# Exercise 2: Evaluate Alternative Model Structures
-# --------------------------------------
+
+# -----------------------------------------------------------------------------
+# 2. Exercise 2: Evaluate Alternative Model Structure
+# -----------------------------------------------------------------------------
 
 @info """
 Exercise 2: Evaluate Alternative Model Structures
@@ -55,7 +53,6 @@ Using the warfarin PK model:
 1. Add a second compartment for drug distribution
 2. Compare the model fits with the initial model
 3. Document which changes lead to better/worse fits
-2. Replace lag time by transit compartments for the absorption
 """
 
 # Model Definition
@@ -67,38 +64,39 @@ warfarin_pkmodel_2cmt = @model begin
         
         # PK Parameters
         # ------------
-        "Clearance (L/h/70kg)"
-        pop_CL   ∈ RealDomain(lower = 0.0, init = 0.134)  # Population clearance
-        "Central Volume (L/70kg)"
-        pop_V    ∈ RealDomain(lower = 0.0, init = 8.11)   # Population volume
+        "Clearance (L/h/70 kg)"
+        θCL   ∈ RealDomain(lower = 0.0, init = 0.134)
+        "Central Volume of Distribution (L/70 kg)"
+        θVC   ∈ RealDomain(lower = 0.0, init = 8.11)
         "Intercompartmental Clearance (L/h/70kg)"
-        pop_Q ∈ RealDomain(lower = 0.0, init = 0.1)  
+        θQ ∈ RealDomain(lower = 0.0, init = 0.1)  
         "Peripheral Volume (L/70kg)"
-        pop_V2 ∈ RealDomain(lower = 0.0, init = 10)
-        "Absorption time (h)"
-        pop_tabs ∈ RealDomain(lower = 0.0, init = 0.523)  # Absorption time
-        "Lag time (h)"
-        pop_lag  ∈ RealDomain(lower = 0.0, init = 0.1)    # Lag time
-
+        θV2 ∈ RealDomain(lower = 0.0, init = 10)
+        "Absorption Half-Life (hr)"
+        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        "Absorption Lag Time (hr)"
+        θlag  ∈ RealDomain(lower = 0.0, init = 0.1)
         
         # Inter-individual Variability (IIV)
         # --------------------------------
-        "PK variability matrix (CL, V, Tabs)"
-        pk_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01])       # PK variability
+        "Variance-Covariance for IIV in PK Parameters"
+        pk_Ω     ∈ PDiagDomain([0.09, 0.09])
+        "Variance for IIV in Absorption Half-Life"
+        tabs_ω   ∈ RealDomain(lower = 0.0, init = 0.09)
         
         # Residual Error Parameters
         # -----------------------
-        "Proportional residual error for concentration"
+        "Proportional Error for Concentrations"
         σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
-        "Additive residual error for concentration (mg/L)"
+        "Additive Error for Concentrations (mg/L)"
         σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
     end
 
     ##### Random Effects Block #####
     # The @random block defines the distribution of individual random effects
     @random begin
-        # PK random effects - multivariate normal distribution
-        pk_η ~ MvNormal(pk_Ω)      # For CL, V, and Tabs
+        pk_η ~ MvNormal(pk_Ω) # Sample from multivariate normal distribution
+        tabs_η ~ Normal(0.0, sqrt(tabs_ω)) # Sample from normal distribution
     end
 
     ##### Covariates Block #####
@@ -110,32 +108,32 @@ warfarin_pkmodel_2cmt = @model begin
     @pre begin
         # Individual PK Parameters
         # ----------------------
-        CL = FSZCL * pop_CL * exp(pk_η[1])    # Individual clearance
-        Vc = FSZV * pop_V * exp(pk_η[2])      # Individual volume
-        Q = FSZCL * pop_Q 
-        V2 = FSZV * pop_V2 
-        tabs = pop_tabs * exp(pk_η[3])         # Individual absorption time
-        Ka = log(2) / tabs                     # Absorption rate constant
+        CL = θCL * FSZCL * exp(pk_η[1])
+        Vc = θVC * FSZV * exp(pk_η[2])
+        Q = θQ * FSZCL  
+        V2 = θV2 * FSZV 
+        tabs = θtabs * exp(tabs_η)
+        Ka = log(2) / tabs # Convert half-life to first-order rate constant
     end
 
     ##### Dosing Control Block #####
     # Define dosing-related parameters
     @dosecontrol begin
-        lags = (Depot = pop_lag,) # Individual lag time
+        lags = (Depot = θlag,) 
     end
 
     ##### Variables Block #####
     # Define derived variables used in dynamics and observations
     @vars begin
-        cp := Central / Vc           # Concentration in central compartment
-        ratein := Ka * Depot         # Absorption rate from depot
+        # Concentration in central compartment
+        cp := Central / Vc
     end
 
     ##### Dynamics Block #####
     # Define the differential equations for the model
     @dynamics begin
-        Depot'    = -ratein              # Change in depot compartment
-        Central'  =  ratein - CL * cp - Q/Vc * Central + (Q/V2) * Peripheral
+        Depot'    = -Ka * Depot             # Rate of change in depot compartment
+        Central'  =  Ka * Depot - CL/Vc * Central - Q/Vc * Central + (Q/V2) * Peripheral # Rate of change in central compartment
         Peripheral' = (Q/Vc) * Central - (Q/V2) * Peripheral
     end
 
@@ -158,16 +156,21 @@ fit_2cmt = fit(
 
 coefficients_table(fit_2cmt) # Table of parameter estimates with metadata 
 
-# AIC and VPC
+# Parameter uncertainty
 # --------------
-aic(fit_2cmt)
+inf_2cmt = infer(fit_2cmt)
+
+# Diagnostic plots and VPC
+# --------------
+pred_2cmt = inspect(fit_2cmt)
+goodness_of_fit(pred_2cmt)
 
 vpc_2cmt = vpc(fit_2cmt; observations = [:conc], ensemblealg = EnsembleThreads())
 vpc_plot(vpc_2cmt,
     simquantile_medians = true,
     observations = true,
     axis = (
-        xlabel = "Time (h)",
+        xlabel = "Time (hr)",
         ylabel = "Warfarin Concentration (mg/L)",
         title = "VPC - Warfarin Concentration"
     ),
@@ -179,157 +182,23 @@ vpc_plot(vpc_2cmt,
 
 # Model comparison
 # --------------
-vscodedisplay(compare_estimates(;fpm, fit_2cmt)) # Comparison parameter estimates
-lrtest(fpm, fit_2cmt) # likelihood ratio test to compare the two nested models
+vscodedisplay(compare_estimates(; warfarin_pkmodel_fit, fit_2cmt)) # Comparison parameter estimates
+lrtest(warfarin_pkmodel_fit, fit_2cmt) # likelihood ratio test to compare the two nested models
 
 # Metrics comparison:
-comp_metrics = @chain metrics_table(fpm) begin
+comp_metrics = @chain metrics_table(warfarin_pkmodel_fit) begin
     leftjoin(metrics_table(fit_2cmt); on = :Metric, makeunique = true)
     rename!(:Value => :pk1cmp, :Value_1 => :pk2cmp)
 end
 vscodedisplay(comp_metrics)
 
-# Exercise 3: Evaluate Alternative Model Structures
-# --------------------------------------
+
+# -----------------------------------------------------------------------------
+# 3. Exercise 3: Evaluate correlation between ηCL and ηV1
+# -----------------------------------------------------------------------------
 
 @info """
-Exercise 3: Evaluate Alternative Model Structures
--------------------------------------
-Using the warfarin PK model:
-1. Use Gamma distribution for the absorption
-2. Compare the model fits with the initial model
-3. Document which changes lead to better/worse fits
-"""
-
-# Model Definition
-# --------------
-warfarin_pkmodel_gamma = @model begin
-    ##### Parameter Block #####
-    # The @param block defines all model parameters and their properties
-    @param begin
-        
-        # PK Parameters
-        # ------------
-        "Clearance (L/h/70kg)"
-        pop_CL   ∈ RealDomain(lower = 0.0, init = 0.134)  # Population clearance
-        "Central Volume (L/70kg)"
-        pop_V    ∈ RealDomain(lower = 0.0, init = 8.11)   # Population volume
-        "Mean absorption time (h)"
-        pop_mat ∈ RealDomain(lower = 0, init = 1)
-        "Number of transit compartments"
-        pop_n ∈ RealDomain(lower = 0, init = 2)
-
-        
-        # Inter-individual Variability (IIV)
-        # --------------------------------
-        "PK variability matrix (CL, V)"
-        pk_Ω     ∈ PDiagDomain([0.01, 0.01])       # PK variability
-        
-        # Residual Error Parameters
-        # -----------------------
-        "Proportional residual error for concentration"
-        σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
-        "Additive residual error for concentration (mg/L)"
-        σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
-    end
-
-    ##### Random Effects Block #####
-    # The @random block defines the distribution of individual random effects
-    @random begin
-        # PK random effects - multivariate normal distribution
-        pk_η ~ MvNormal(pk_Ω)      # For CL, V, and Tabs
-    end
-
-    ##### Covariates Block #####
-    # Declare which covariates from the data will be used in the model
-    @covariates FSZV FSZCL
-
-    ##### Pre-computation Block #####
-    # Calculate individual parameters using population parameters, random effects, and covariates
-    @pre begin
-        # Individual PK Parameters
-        # ----------------------
-        CL = FSZCL * pop_CL * exp(pk_η[1])    # Individual clearance
-        Vc = FSZV * pop_V * exp(pk_η[2])      # Individual volume
-        MAT = pop_mat
-        N = pop_n
-        ρ = @delay(Gamma(N, MAT / N), Central) # Gamma distribution
-    end
-
-    ##### Dosing Control Block #####
-    # Define dosing-related parameters
-    @dosecontrol begin
-        bioav = (; Central = 0.0)
-    end
-
-    ##### Variables Block #####
-    # Define derived variables used in dynamics and observations
-    @vars begin
-        cp := Central / Vc           # Concentration in central compartment
-    end
-
-    ##### Dynamics Block #####
-    # Define the differential equations for the model
-    @dynamics begin
-        Central'  =  ρ - CL * cp    # Change in central compartment
-    end
-
-    ##### Observation Block #####
-    # Define how the model predictions relate to observed data
-    @derived begin
-        "Warfarin Concentration (mg/L)"
-        conc ~ @. Normal(cp, sqrt((σ_prop * cp)^2 + σ_add^2))  # Combined error model
-    end
-end
-
-
-# Fit
-# --------------
-fit_gamma = fit(
-    warfarin_pkmodel_gamma,              # The model we defined
-    pop_pk,                        # The population data
-    init_params(warfarin_pkmodel_gamma),
-    FOCE()                       # Estimation method
-)
-
-coefficients_table(fit_gamma) # Table of parameter estimates with metadata 
-
-# AIC and VPC
-# --------------
-aic(fit_gamma)
-
-vpc_gamma = vpc(fit_gamma; observations = [:conc], ensemblealg = EnsembleThreads())
-vpc_plot(vpc_gamma,
-    simquantile_medians = true,
-    observations = true,
-    axis = (
-        xlabel = "Time (h)",
-        ylabel = "Warfarin Concentration (mg/L)",
-        title = "VPC - Warfarin Concentration"
-    ),
-    figurelegend = (position = :t, 
-                    orientation = :vertical, 
-                    tellheight = true, tellwidth = false, nbanks = 3),
-    figure = (size = (800, 600),)
-)
-
-# Model comparison
-# --------------
-vscodedisplay(compare_estimates(;fpm, fit_gamma)) # Comparison parameter estimates
-
-# Metrics comparison:
-comp_metrics = @chain metrics_table(fpm) begin
-    leftjoin(metrics_table(fit_gamma); on = :Metric, makeunique = true)
-    rename!(:Value => :pkLag, :Value_1 => :pkGamma)
-end
-vscodedisplay(comp_metrics)
-
-
-# Exercise 4: Evaluate correlation between ηCL and ηV1
-# --------------------------------------
-
-@info """
-Exercise 4: Evaluate correlation between ηCL and ηV1
+Exercise 3: Evaluate correlation between ηCL and ηV1
 -------------------------------------
 Using the warfarin PK model:
 1. Add correlation between ηCL and ηV1
@@ -340,81 +209,69 @@ Using the warfarin PK model:
 # Model Definition
 # --------------
 warfarin_pkmodel_corr = @model begin
-    ##### Parameter Block #####
     # The @param block defines all model parameters and their properties
     @param begin
-        
-        # PK Parameters
-        # ------------
-        "Clearance (L/h/70kg)"
-        pop_CL   ∈ RealDomain(lower = 0.0, init = 0.134)  # Population clearance
-        "Central Volume (L/70kg)"
-        pop_V    ∈ RealDomain(lower = 0.0, init = 8.11)   # Population volume
-        "Absorption time (h)"
-        pop_tabs ∈ RealDomain(lower = 0.0, init = 0.523)  # Absorption time
-        "Lag time (h)"
-        pop_lag  ∈ RealDomain(lower = 0.0, init = 0.1)    # Lag time
+        # Population PK Parameters
+        "Clearance (L/h/70 kg)"
+        θCL   ∈ RealDomain(lower = 0.0, init = 0.134)
+        "Central Volume of Distribution (L/70 kg)"
+        θVC   ∈ RealDomain(lower = 0.0, init = 8.11)
+        "Absorption Half-Life (hr)"
+        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        "Absorption Lag Time (hr)"
+        θlag  ∈ RealDomain(lower = 0.0, init = 0.1)
 
-        
-        # Inter-individual Variability (IIV)
-        # --------------------------------
+        # Inter-Individual Variability
         "PK variability matrix (CL, V)"
-        clv_Ω    ∈ PSDDomain([0.02 0.01; 0.01 0.02])     
-        "PK variability Tabs"
-        tabs_Ω     ∈ PDiagDomain([0.01])      
+        clv_Ω    ∈ PSDDomain([0.02 0.01; 0.01 0.02])  
+        "Variance for IIV in Absorption Half-Life"
+        tabs_ω   ∈ RealDomain(lower = 0.0, init = 0.09)
         
-        # Residual Error Parameters
-        # -----------------------
-        "Proportional residual error for concentration"
+        # Random Unexplained Variability
+        "Proportional Error for Concentrations"
         σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
-        "Additive residual error for concentration (mg/L)"
+        "Additive Error for Concentrations (mg/L)"
         σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
     end
 
-    ##### Random Effects Block #####
     # The @random block defines the distribution of individual random effects
     @random begin
-        # PK random effects - multivariate normal distribution
-        clv_η ~ MvNormal(clv_Ω)      # For CL, V
-        tabs_η ~ MvNormal(tabs_Ω)      # For CL, V
+        clv_η ~ MvNormal(clv_Ω) # Sample from multivariate normal distribution
+        tabs_η ~ Normal(0.0, sqrt(tabs_ω)) # Sample from normal distribution
     end
 
-    ##### Covariates Block #####
     # Declare which covariates from the data will be used in the model
     @covariates FSZV FSZCL
 
-    ##### Pre-computation Block #####
-    # Calculate individual parameters using population parameters, random effects, and covariates
+    # Calculate individual parameters using population parameters, random effects,
+    # and covariates
     @pre begin
         # Individual PK Parameters
-        # ----------------------
-        CL = FSZCL * pop_CL * exp(clv_η[1])    # Individual clearance
-        Vc = FSZV * pop_V * exp(clv_η[2])      # Individual volume
-        tabs = pop_tabs * exp(tabs_η[1])         # Individual absorption time
-        Ka = log(2) / tabs                     # Absorption rate constant
+        CL = θCL * FSZCL * exp(clv_η[1])
+        Vc = θVC * FSZV * exp(clv_η[2])
+        tabs = θtabs * exp(tabs_η)
+        Ka = log(2) / tabs # Convert half-life to first-order rate constant
     end
 
-    ##### Dosing Control Block #####
-    # Define dosing-related parameters
+    # Define dosing-related parameters (bioavailability [bioav], absorption rate [rate],
+    # absorption duration [duration], absorption lag [lags])
     @dosecontrol begin
-        lags = (Depot = pop_lag ,) # Individual lag time
+        lags = (Depot = θlag,) 
     end
 
-    ##### Variables Block #####
     # Define derived variables used in dynamics and observations
     @vars begin
-        cp := Central / Vc           # Concentration in central compartment
-        ratein := Ka * Depot         # Absorption rate from depot
+        # Concentration in central compartment
+        cp := Central / Vc
     end
 
-    ##### Dynamics Block #####
     # Define the differential equations for the model
+    # Options available for using analytical solutions instead
     @dynamics begin
-        Depot'    = -ratein              # Change in depot compartment
-        Central'  =  ratein - CL * cp    # Change in central compartment
+        Depot'    = -Ka * Depot              # Rate of change in depot compartment
+        Central'  =  Ka * Depot - CL * cp    # Rate of change in central compartment
     end
 
-    ##### Observation Block #####
     # Define how the model predictions relate to observed data
     @derived begin
         "Warfarin Concentration (mg/L)"
@@ -422,29 +279,32 @@ warfarin_pkmodel_corr = @model begin
     end
 end
 
-
 # Fit
 # --------------
-fpm_corr = fit(
+fit_corr = fit(
     warfarin_pkmodel_corr,              # The model we defined
     pop_pk,                        # The population data
     init_params(warfarin_pkmodel_corr),
     FOCE()                       # Estimation method
 )
 
-coef(fpm_corr) 
-vscodedisplay(compare_estimates(;fpm, fpm_corr))
+coefficients_table(fit_corr) # Table of parameter estimates with metadata 
 
-# AIC and VPC
+# Parameter uncertainty
 # --------------
-aic(fpm_corr)
+inf_corr = infer(fit_corr)
 
-vpc_corr= vpc(fpm_corr; observations = [:conc], ensemblealg = EnsembleThreads())
+# Diagnostic plots and VPC
+# --------------
+pred_corr = inspect(fit_corr)
+goodness_of_fit(pred_corr)
+
+vpc_corr = vpc(fit_corr; observations = [:conc], ensemblealg = EnsembleThreads())
 vpc_plot(vpc_corr,
     simquantile_medians = true,
     observations = true,
     axis = (
-        xlabel = "Time (h)",
+        xlabel = "Time (hr)",
         ylabel = "Warfarin Concentration (mg/L)",
         title = "VPC - Warfarin Concentration"
     ),
@@ -456,22 +316,24 @@ vpc_plot(vpc_corr,
 
 # Model comparison
 # --------------
-vscodedisplay(compare_estimates(;fpm, fpm_corr)) # Comparison parameter estimates
-lrtest(fpm, fpm_corr) # likelihood ratio test to compare the two nested models
+vscodedisplay(compare_estimates(; warfarin_pkmodel_fit, fit_corr)) # Comparison parameter estimates
+lrtest(warfarin_pkmodel_fit, fit_corr) # likelihood ratio test to compare the two nested models
 
 # Metrics comparison:
-comp_metrics = @chain metrics_table(fpm) begin
-    leftjoin(metrics_table(fpm_corr); on = :Metric, makeunique = true)
-    rename!(:Value => :pknocorr, :Value_1 => :pkcorr)
+comp_metrics = @chain metrics_table(warfarin_pkmodel_fit) begin
+    leftjoin(metrics_table(fit_corr); on = :Metric, makeunique = true)
+    rename!(:Value => :pk1cmp, :Value_1 => :pkcorr)
 end
 vscodedisplay(comp_metrics)
 
 
-# Exercise 5: Evaluate sex effect on CL
-# --------------------------------------
+
+# -----------------------------------------------------------------------------
+# 4. Exercise 4: Evaluate covariate effect
+# -----------------------------------------------------------------------------
 
 @info """
-Exercise 5: Evaluate sex effect on CL
+Exercise 4: Evaluate sex effect on CL
 -------------------------------------
 Using the warfarin PK model:
 1. Add sex effect on CL
@@ -482,79 +344,72 @@ Using the warfarin PK model:
 # Model Definition
 # --------------
 warfarin_pkmodel_sex = @model begin
-    ##### Parameter Block #####
     # The @param block defines all model parameters and their properties
     @param begin
-        
-        # PK Parameters
-        # ------------
-        "Clearance (L/h/70kg)"
-        pop_CL   ∈ RealDomain(lower = 0.0, init = 0.134)  # Population clearance
-        "Central Volume (L/70kg)"
-        pop_V    ∈ RealDomain(lower = 0.0, init = 8.11)   # Population volume
-        "Absorption time (h)"
-        pop_tabs ∈ RealDomain(lower = 0.0, init = 0.523)  # Absorption time
-        "Lag time (h)"
-        pop_lag  ∈ RealDomain(lower = 0.0, init = 0.1)    # Lag time
+        # Population PK Parameters
+        "Clearance (L/h/70 kg)"
+        θCL   ∈ RealDomain(lower = 0.0, init = 0.134)
+        "Central Volume of Distribution (L/70 kg)"
+        θVC   ∈ RealDomain(lower = 0.0, init = 8.11)
+        "Absorption Half-Life (hr)"
+        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        "Absorption Lag Time (hr)"
+        θlag  ∈ RealDomain(lower = 0.0, init = 0.1)
+
         "Sex effect on CL"
-        SEXonCL  ∈ RealDomain(init = 0.5)   
+        SEXonCL  ∈ RealDomain(init = 0.5)  
+
+        # Inter-Individual Variability
+        "Variance-Covariance for IIV in PK Parameters"
+        pk_Ω     ∈ PDiagDomain([0.09, 0.09])
+        "Variance for IIV in Absorption Half-Life"
+        tabs_ω   ∈ RealDomain(lower = 0.0, init = 0.09)
         
-        # Inter-individual Variability (IIV)
-        # --------------------------------
-        "PK variability matrix (CL, V, Tabs)"
-        pk_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01])       # PK variability
-        
-        # Residual Error Parameters
-        # -----------------------
-        "Proportional residual error for concentration"
+        # Random Unexplained Variability
+        "Proportional Error for Concentrations"
         σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
-        "Additive residual error for concentration (mg/L)"
+        "Additive Error for Concentrations (mg/L)"
         σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
     end
 
-    ##### Random Effects Block #####
     # The @random block defines the distribution of individual random effects
     @random begin
-        # PK random effects - multivariate normal distribution
-        pk_η ~ MvNormal(pk_Ω)      # For CL, V, and Tabs
+        pk_η ~ MvNormal(pk_Ω) # Sample from multivariate normal distribution
+        tabs_η ~ Normal(0.0, sqrt(tabs_ω)) # Sample from normal distribution
     end
 
-    ##### Covariates Block #####
     # Declare which covariates from the data will be used in the model
     @covariates FSZV FSZCL SEX
 
-    ##### Pre-computation Block #####
-    # Calculate individual parameters using population parameters, random effects, and covariates
+    # Calculate individual parameters using population parameters, random effects,
+    # and covariates
     @pre begin
         # Individual PK Parameters
-        # ----------------------
-        CL = FSZCL * pop_CL * exp(SEXonCL * SEX) * exp(pk_η[1])    # Individual clearance
-        Vc = FSZV * pop_V * exp(pk_η[2])      # Individual volume
-        tabs = pop_tabs * exp(pk_η[3])         # Individual absorption time
-        Ka = log(2) / tabs                     # Absorption rate constant
+        CL = θCL * FSZCL * exp(SEXonCL * SEX) * exp(pk_η[1])
+        Vc = θVC * FSZV * exp(pk_η[2])
+        tabs = θtabs * exp(tabs_η)
+        Ka = log(2) / tabs # Convert half-life to first-order rate constant
     end
 
-    ##### Dosing Control Block #####
-    # Define dosing-related parameters
+    # Define dosing-related parameters (bioavailability [bioav], absorption rate [rate],
+    # absorption duration [duration], absorption lag [lags])
     @dosecontrol begin
-        lags = (Depot = pop_lag ,) # Individual lag time
+        lags = (Depot = θlag,) 
     end
 
-    ##### Variables Block #####
     # Define derived variables used in dynamics and observations
     @vars begin
-        cp := Central / Vc           # Concentration in central compartment
-        ratein := Ka * Depot         # Absorption rate from depot
+        # Concentration in central compartment
+        cp := Central / Vc
     end
 
-    ##### Dynamics Block #####
     # Define the differential equations for the model
+    # Options available for using analytical solutions instead
     @dynamics begin
-        Depot'    = -ratein              # Change in depot compartment
-        Central'  =  ratein - CL * cp    # Change in central compartment
+        Depot'    = -Ka * Depot              # Rate of change in depot compartment
+        Central'  =  Ka * Depot - CL * cp    # Rate of change in central compartment
     end
 
-    ##### Observation Block #####
     # Define how the model predictions relate to observed data
     @derived begin
         "Warfarin Concentration (mg/L)"
@@ -565,29 +420,47 @@ end
 
 # Fit
 # --------------
-fpm_sex = fit(
+fit_sex = fit(
     warfarin_pkmodel_sex,              # The model we defined
     pop_pk,                        # The population data
     init_params(warfarin_pkmodel_sex),
     FOCE()                       # Estimation method
 )
 
-coefficients_table(fpm_sex) 
+coefficients_table(fit_sex) 
 
-# AIC 
+# Parameter uncertainty
 # --------------
-aic(fpm_sex)
+inf_sex = infer(fit_sex)
 
+# Diagnostic plots and VPC
+# --------------
+pred_sex = inspect(fit_sex)
+goodness_of_fit(pred_sex)
+
+vpc_sex = vpc(fit_sex; observations = [:conc], ensemblealg = EnsembleThreads())
+vpc_plot(vpc_sex,
+    simquantile_medians = true,
+    observations = true,
+    axis = (
+        xlabel = "Time (hr)",
+        ylabel = "Warfarin Concentration (mg/L)",
+        title = "VPC - Warfarin Concentration"
+    ),
+    figurelegend = (position = :t, 
+                    orientation = :vertical, 
+                    tellheight = true, tellwidth = false, nbanks = 3),
+    figure = (size = (800, 600),)
+)
 
 # Model comparison
 # --------------
-vscodedisplay(compare_estimates(;fpm, fpm_sex)) # Comparison parameter estimates
-lrtest(fpm, fpm_sex) # likelihood ratio test to compare the two nested models
+vscodedisplay(compare_estimates(; warfarin_pkmodel_fit, fit_sex)) # Comparison parameter estimates
+lrtest(warfarin_pkmodel_fit, fit_sex) # likelihood ratio test to compare the two nested models
 
 # Metrics comparison:
-comp_metrics = @chain metrics_table(fpm) begin
-    leftjoin(metrics_table(fpm_sex); on = :Metric, makeunique = true)
-    rename!(:Value => :pknosex, :Value_1 => :pksexoncl)
+comp_metrics = @chain metrics_table(warfarin_pkmodel_fit) begin
+    leftjoin(metrics_table(fit_sex); on = :Metric, makeunique = true)
+    rename!(:Value => :pk1cmp, :Value_1 => :sexoncl)
 end
 vscodedisplay(comp_metrics)
-
