@@ -33,6 +33,7 @@ using Logging
 # Obtain individual- and population-predictions from the model fit
 warfarin_pkmodel_pred = inspect(warfarin_pkmodel_fit)
 warfarin_pkmodel_preddf = DataFrame(warfarin_pkmodel_pred)
+vscodedisplay(warfarin_pkmodel_preddf)
 
 # Goodness-of-fit diagnostics
 fig_gof_conc = goodness_of_fit(warfarin_pkmodel_pred,
@@ -63,7 +64,25 @@ iwresiduals_vs_ipredictions(warfarin_pkmodel_pred)
 
 
 # -----------------------------------------------------------------------------
-# 3. INDIVIDUAL CONCENTRATION TIME-COURSES
+# 3. NORMALIZED PREDICTION DISTRIBUTION ERRORS (NPDE)
+# -----------------------------------------------------------------------------
+# Obtain individual- and population-predictions from the model fit
+# nsim: number of simulations to be performed to obtain simulation-based residual diagnostics
+warfarin_pkmodel_pred = inspect(warfarin_pkmodel_fit, nsim = 100) # Specifying 100 simulations for demonstrate purposes only
+warfarin_pkmodel_preddf = DataFrame(warfarin_pkmodel_pred)
+vscodedisplay(warfarin_pkmodel_preddf)
+
+# Generating goodness-of-fit diagnostics when NPDEs are available will now
+# plot them
+goodness_of_fit(warfarin_pkmodel_pred)
+
+# subpanel for NPDEs 
+npde_vs_time(warfarin_pkmodel_pred)
+npde_vs_predictions(warfarin_pkmodel_pred)
+
+
+# -----------------------------------------------------------------------------
+# 4. INDIVIDUAL CONCENTRATION TIME-COURSES
 # -----------------------------------------------------------------------------
 # Plot individual observed time-courses with individual- and population-
 # predictions
@@ -89,35 +108,55 @@ display.(fig_id_conc)
 
 
 # -----------------------------------------------------------------------------
-# 2. NORMALIZED PREDICTION DISTRIBUTION ERRORS (NPDE)
+# 5. EMPIRICAL BAYES ESTIMATES DISTRIBUTIONS
 # -----------------------------------------------------------------------------
-# Obtain individual- and population-predictions from the model fit
-warfarin_pkmodel_pred = inspect(warfarin_pkmodel_fit, nsim = 1000)
-warfarin_pkmodel_preddf = DataFrame(warfarin_pkmodel_pred)
+# Plot histograms of each of the EBEs from the model output
+fig_ebe_hist = empirical_bayes_dist(
+    warfarin_pkmodel_pred,  
+)
 
-# Generating goodness-of-fit diagnostics when NPDEs are available will now
-# plot them
-goodness_of_fit(warfarin_pkmodel_pred)
+# Plot EBEs versus covariates
+empirical_bayes_vs_covariates(
+    warfarin_pkmodel_pred,  
+)
 
+
+# -----------------------------------------------------------------------------
+# 6. RESIDUAL DISTRIBUTIONS
+# -----------------------------------------------------------------------------
+# Plot histograms of weighted residuals from the model output
+wresiduals_dist(
+    warfarin_pkmodel_pred, 
+)
+
+# Plot histograms of NPDEs from the model output
+npde_dist(
+    warfarin_pkmodel_pred, 
+)
+
+
+# -----------------------------------------------------------------------------
+# 7. CUSTOM PLOTS
+# -----------------------------------------------------------------------------
 # Custom plots can be generated using the DataFrame output of inspect and
 # using AlgebraOfGraphics.jl/CairoMakie.jl packages
 p_npde_scatter = data(warfarin_pkmodel_preddf)*
-    mapping(:time,:conc_npde)*
-    visual(Scatter)
-draw(p_npde_scatter)
+    mapping(:time,:conc_npde)*  # to define the aesthetic mapping of variables to the plot axes
+    visual(Scatter)  # to specify the type of plot
+draw(p_npde_scatter)  # to render and display the plot
 
 # A linear regression line can be added
 p_npde_linear = data(dropmissing(warfarin_pkmodel_preddf,:conc))*
     mapping(:time,:conc_npde)*
-    AlgebraOfGraphics.linear()*
-    visual(;label = "Linear Regression")
-draw(p_npde_scatter + p_npde_linear)
+    AlgebraOfGraphics.linear()*  # to add a linear regression trend line to the plot
+    visual(;label = "Linear Regression")  # to ensure that the regression line has an appropriate legend entry
+draw(p_npde_scatter + p_npde_linear)  # to combine both plots
 
 # And a LOESS smooth line can be added
 p_npde_loess = data(dropmissing(warfarin_pkmodel_preddf,:conc))*
     mapping(:time,:conc_npde)*
-    AlgebraOfGraphics.smooth()*
-    visual(;color = :red,label = "LOESS")
+    AlgebraOfGraphics.smooth()*  #  to add a LOESS smooth line to the plot
+    visual(;color = :red, label = "LOESS")
 draw(p_npde_scatter + p_npde_linear + p_npde_loess)
 
 # Adjust figure options
@@ -136,7 +175,7 @@ draw(p_npde_scatter + p_npde_linear + p_npde_loess;
 
 
 # -----------------------------------------------------------------------------
-# 4. VISUAL PREDICTIVE CHECK
+# 8. VISUAL PREDICTIVE CHECK
 # -----------------------------------------------------------------------------
 # VPC is a powerful diagnostic that:
 # - Simulates many datasets from the model
