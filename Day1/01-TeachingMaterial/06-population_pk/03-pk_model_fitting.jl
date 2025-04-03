@@ -64,6 +64,10 @@ warfarin_pkmodel_fit = fit(
     FOCE(),                        # Estimation method
 ) 
 
+# Convergence trace: 
+# Plot the log-likelihood and gradient norm over each iteration
+convergence_trace(warfarin_pkmodel_fit)
+
 # Obtain parameter uncertainty
 warfarin_pkmodel_varcov = infer(warfarin_pkmodel_fit)
 
