@@ -88,6 +88,16 @@ warfarin_pkmodel_fit = fit(
     FOCE(),
 )
 
+# Example: fixing a parameter:
+# Fix IIV on tabs to 0.5
+warfarin_pkmodel_fit_fix = fit(
+    warfarin_pkmodel,
+    pop_pk,
+    (; initial_params..., tabs_ω = 0.5), # Replace initial value for tabs_ω by 0.5 
+    FOCE(),
+    constantcoef = (:tabs_ω,),  # Fix the tabs_ω parameter
+)
+
 # -----------------------------------------------------------------------------
 # 5. NUMERICAL DIAGNOSTICS
 # -----------------------------------------------------------------------------
