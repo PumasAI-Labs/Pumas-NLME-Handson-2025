@@ -1,4 +1,6 @@
-# Purpose: HCV Model from Nyberg et al., 2014
+# =============================================================================
+# HCV Model from Nyberg et al., 2014 - Exercise
+# =============================================================================
 # https://pmc.ncbi.nlm.nih.gov/articles/PMC4294071/
 # ==============================================================
 
@@ -64,10 +66,10 @@ model_hcv = @model begin
   end
 
 
-# Parameter values:
+# Initial parameter values:
 #------------
 
-prm = (
+init = (
     logθKa = log(0.80),
 
   )

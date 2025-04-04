@@ -1,4 +1,6 @@
-# Purpose: HCV Model from Nyberg et al., 2014
+# =============================================================================
+# HCV Model from Nyberg et al., 2014 - Solutions
+# =============================================================================
 # https://pmc.ncbi.nlm.nih.gov/articles/PMC4294071/
 # ==============================================================
 
@@ -132,7 +134,6 @@ simdata = simobs(
 
 # Plot:
 sim_plot(simdata, observations = [:yPK], axis = (; xticks = 0:7:30))
-
 sim_plot(simdata, observations = [:yPD],  axis = (; xticks = 0:7:30))
 
 
