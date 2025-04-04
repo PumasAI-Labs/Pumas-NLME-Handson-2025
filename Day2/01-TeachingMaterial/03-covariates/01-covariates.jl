@@ -17,6 +17,7 @@ using DataFrames, DataFramesMeta, Chain
 using CategoricalArrays
 using Dates
 using CairoMakie, AlgebraOfGraphics, ColorSchemes, PairPlots
+using PumasPlots
 using SummaryTables
 
 ## Load the warfarin dataset from PharmaDatasets and modify so that it is ready for the examples
@@ -398,7 +399,7 @@ mod_code_sexwt = @model begin
       # Return error message if specified conditions are not met
       error("Expected SEX to be either \"Female\" or \"Male\" but the value was: $SEX")
     end
-  
+
     # Effect of body weight on CL
     COVWTCL = (WEIGHT / 70)^θWTCL
 
@@ -447,7 +448,18 @@ init_params_sexwt = (;
 )
 mod_fit_sexwt = fit(mod_code_sexwt, examp_df_pumas, init_params_sexwt, FOCE())
 
-# Comparing Nested Models with the Likelihood Ratio Test
+## Compare the covariate and the base models
+imod_fit = inspect(mod_fit)
+imod_fit_sex = inspect(mod_fit_sex)
+imod_fit_wt = inspect(mod_fit_wt)
+imod_fit_sexwt = inspect(mod_fit_sexwt)
+plot_kwargs = (; separate=true, limit=12, columns=3, figure=(; size=(900, 900)), paginate=true)
+display(subject_fits(imod_fit; plot_kwargs...)[1])
+display(subject_fits(imod_fit_sex; plot_kwargs...)[1])
+display(subject_fits(imod_fit_wt; plot_kwargs...)[1])
+display(subject_fits(imod_fit_sexwt; plot_kwargs...)[1])
+display(vpc_plot(vpc(mod_fit)))
+display(vpc_plot(vpc(mod_fit_sexwt)))
 
 ## Likelihood Ratio Test for comparing nested models
 ##   https://en.wikipedia.org/wiki/Likelihood-ratio_test
@@ -513,7 +525,7 @@ mod_fit_sexwt = fit(mod_code_sexwt, examp_df_pumas, init_params_sexwt, FOCE())
 ## α is the type-1 error rate, commonly set to 0.05.
 ## A type I error occurs when we reject the null hypothesis
 ## and erroneously state that the study found significant differences when there was no difference.
- 
+
 ## Perform likelihood ratio test between base model and covariate model
 lrt = lrtest(
   mod_fit,     # nested model, the null hypothesis, in our case the model without covariates
