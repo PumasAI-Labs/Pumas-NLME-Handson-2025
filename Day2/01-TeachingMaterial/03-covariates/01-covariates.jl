@@ -1,12 +1,12 @@
-# Full tutorial at
-#   https://tutorials.pumas.ai/html/LearningPaths/03-LP/09-Module/p3-mod9-covdef.html#module-introduction-and-objectives
-# Other relevant tutorials are
-#   https://tutorials.pumas.ai/html/introduction/covariate.html
-#   https://tutorials.pumas.ai/html/accp/casestudy1.html
-#   https://tutorials.pumas.ai/html/covariate_select/01-intro.html
-#   https://tutorials.pumas.ai/html/covariate_select/02-forward_selection.html
-#   https://tutorials.pumas.ai/html/covariate_select/03-backward_elimination.html
-#   https://tutorials.pumas.ai/html/covariate_select/04-mixed.html
+## Full tutorial at
+#    https://tutorials.pumas.ai/html/LearningPaths/03-LP/09-Module/p3-mod9-covdef.html#module-introduction-and-objectives
+#  Other relevant tutorials are
+#    https://tutorials.pumas.ai/html/introduction/covariate.html
+#    https://tutorials.pumas.ai/html/accp/casestudy1.html
+#    https://tutorials.pumas.ai/html/covariate_select/01-intro.html
+#    https://tutorials.pumas.ai/html/covariate_select/02-forward_selection.html
+#    https://tutorials.pumas.ai/html/covariate_select/03-backward_elimination.html
+#    https://tutorials.pumas.ai/html/covariate_select/04-mixed.html
 
 ## Imports
 using Pumas
@@ -68,8 +68,8 @@ examp_df = @chain "paganz2024/warfarin_long" begin
 end
 
 ## The Warfarin Population Pharmacokinetic Model is a 1-compartment model with linear elimination and first-order absorption,
-## log-normally distributed inter-individual variability on clearance (CL) and volume of distribution of the central compartment (VC),
-## and a proportional residual error model.
+#  log-normally distributed inter-individual variability on clearance (CL) and volume of distribution of the central compartment (VC),
+#  and a proportional residual error model.
 mod_code = @model begin
   @param begin
     # Definition of fixed effect parameters
@@ -132,7 +132,7 @@ examp_df_pumas_df = DataFrame(examp_df_pumas)
 @rsubset examp_df_pumas_df :id == "1"
 
 ## Values of time-dependent covariates *do not* need to be time-matched
-## with existing dosing and dependent variable observation records
+#  with existing dosing and dependent variable observation records
 timecov_df = DataFrame(
   id=1,
   time=0:1:8,
@@ -143,7 +143,7 @@ timecov_df = DataFrame(
 )
 
 ## Missing values for time-dependent covariates are interpolated when the `Population` is constructed via `read_pumas`.
-## The behaviour is controlled by the `covariates_direction` keyword argument.
+#  The behaviour is controlled by the `covariates_direction` keyword argument.
 
 ## `covariates_direction = :left` means the last observation is carried forward (default)
 timecov_pumas_locf = read_pumas(
@@ -168,13 +168,13 @@ timecov_pumas_nocb = read_pumas(
 DataFrame(timecov_pumas_nocb)
 
 ## Missing values for covariates are not handled by the `PumasModel`.
-## If it is intended that `missing` values for covariate variables are to be imputed
-## (e.g., with the median or mode for the individual *or* the analysis population)
-## then this needs to be handled at the analysis dataset construction stage
-## (i.e., prior to constructing the `Population` with `read_pumas`).
+#  If it is intended that `missing` values for covariate variables are to be imputed
+#  (e.g., with the median or mode for the individual *or* the analysis population)
+#  then this needs to be handled at the analysis dataset construction stage
+#  (i.e., prior to constructing the `Population` with `read_pumas`).
 
 ## To be used inside a `PumasModel`, covariate variables need to be specified in the `@covariates` block. 
-## Not every variable defined as a covariate in the `Population` needs to be defined in `@covariates`.
+#  Not every variable defined as a covariate in the `Population` needs to be defined in `@covariates`.
 mod_code_sex = @model begin
   @param begin
     # Definition of fixed effect parameters
@@ -462,69 +462,69 @@ display(vpc_plot(vpc(mod_fit)))
 display(vpc_plot(vpc(mod_fit_sexwt)))
 
 ## Likelihood Ratio Test for comparing nested models
-##   https://en.wikipedia.org/wiki/Likelihood-ratio_test
-##
-## Let us consider a model parametrized by θ ∈ 𝚯,
-## where 𝚯 is the space of all possible parameters.
-## Let L(θ) be the likelihood of parameters θ according to this model and the data we have.
-##
-## A nested model is obtained by fixing some of the parameters θ.
-## More generally, a nested model is defined by a subset of the parameter space 𝚯₀ ⊆ 𝚯.
-##
-## For example, if 𝚯 = ℜ³ we could decide to fix the third parameter θ₃ to 0.
-## This would correspond to 𝚯₀ = {(θ₁, θ₂, 0) s.t. (θ₁, θ₂) ∈ ℜ²}.
-##
-## The model with parameter space 𝚯 is more general then the one with parameter space 𝚯₀.
-## Moreover, any specific model obtained for some θ ∈ 𝚯₀
-## is also a valid model for the wider space 𝚯.
-## Thus, the model corresponding to parameter space 𝚯₀ is said to be *nested*.
-##
-## In our case the general model is the joint PK/covariate model
-## while the nested model is the base model that ignores covariates effect.
-## The latter can be obtained from the former by fixing the population-level parameters of the covariate model (usually to zero),
-##
-## Statistical test:
-##  - Null hypothesis: θ ∈ 𝚯₀, i.e., the nested model is sufficient to explain the data.
+#    https://en.wikipedia.org/wiki/Likelihood-ratio_test
+#
+#  Let us consider a model parametrized by θ ∈ 𝚯,
+#  where 𝚯 is the space of all possible parameters.
+#  Let L(θ) be the likelihood of parameters θ according to this model and the data we have.
+#
+#  A nested model is obtained by fixing some of the parameters θ.
+#  More generally, a nested model is defined by a subset of the parameter space 𝚯₀ ⊆ 𝚯.
+#
+#  For example, if 𝚯 = ℜ³ we could decide to fix the third parameter θ₃ to 0.
+#  This would correspond to 𝚯₀ = {(θ₁, θ₂, 0) s.t. (θ₁, θ₂) ∈ ℜ²}.
+#
+#  The model with parameter space 𝚯 is more general then the one with parameter space 𝚯₀.
+#  Moreover, any specific model obtained for some θ ∈ 𝚯₀
+#  is also a valid model for the wider space 𝚯.
+#  Thus, the model corresponding to parameter space 𝚯₀ is said to be *nested*.
+#
+#  In our case the general model is the joint PK/covariate model
+#  while the nested model is the base model that ignores covariates effect.
+#  The latter can be obtained from the former by fixing the population-level parameters of the covariate model (usually to zero),
+#
+#  Statistical test:
+#   - Null hypothesis: θ ∈ 𝚯₀, i.e., the nested model is sufficient to explain the data.
 #     In our case: covariates are not necessary to explain the data.
-##  - Alternative hypothesis: θ ∈ 𝚯 ∖ 𝚯₀, i.e., the more general model is necessary to explain the data.
-##    In our case: covariates are necessary to explain the data.
-##
-## Test statistic:
-##
-##             sup {L(θ) s.t. θ ∈ 𝚯₀}            L(θ̂₀)
-## λ = -2 log ————————————————————————— = -2 log ——————— = 2 (l(θ̂) - l(θ̂₀))
-##             sup {L(θ) s.t. θ ∈ 𝚯 }            L(θ̂ )
-##
-## where θ̂ is the Maximum Likelihood Estimate (MLE) of the parameters obtained using the general model,
-## θ̂₀ is the MLE obtained using the nested model
-## and l(θ) = log L(θ) is the loglikelihood function.
-##
-## It is clear that L(θ̂) ≥ L(θ̂₀) and thus λ ≥ 0.
-## If L(θ̂) is much larger than L(θ̂₀), i.e., if λ is very large,
-## then the general model is much better at explaining the data
-## and we may conclude that such additional generality is necessary.
-## In our case this would mean concluding that there is a covariate effect that cannot be ignored.
-## But how large is enough for us to conclude so?
-##
-## If the null hypothesis is true,
-## the test statistic is asymptotically distributed
-## according to a χ² (chi-squared) distribution with degrees of freedom
-## equal to the difference in the number of parameters between the two models,
-## i.e., the degrees of freedom is the number of additional *estimable* parameters in the alternative model.
-##
-## Let cdf be the cumulative distribution function of the χ² distribution.
-## Then 1 - cdf(λ) is "the probability of obtaining test results at least as extreme as the result actually observed,
-## under the assumption that the null hypothesis is correct",
-## AKA the p-value (https://en.wikipedia.org/wiki/P-value).
-##
-## If the p-value derived from the LRT statistic is lower than your desired threshold α,
-## then you will reject the null hypothesis in favor of the alternative hypothesis,
-## indicating that the alternative model provides a better fit to the data.
-## In our case, this means concluding that there is a covariate effect on the model.
-##
-## α is the type-1 error rate, commonly set to 0.05.
-## A type I error occurs when we reject the null hypothesis
-## and erroneously state that the study found significant differences when there was no difference.
+#   - Alternative hypothesis: θ ∈ 𝚯 ∖ 𝚯₀, i.e., the more general model is necessary to explain the data.
+#     In our case: covariates are necessary to explain the data.
+#
+#  Test statistic:
+#
+#              sup {L(θ) s.t. θ ∈ 𝚯₀}            L(θ̂₀)
+#  λ = -2 log ————————————————————————— = -2 log ——————— = 2 (l(θ̂) - l(θ̂₀))
+#              sup {L(θ) s.t. θ ∈ 𝚯 }            L(θ̂ )
+#
+#  where θ̂ is the Maximum Likelihood Estimate (MLE) of the parameters obtained using the general model,
+#  θ̂₀ is the MLE obtained using the nested model
+#  and l(θ) = log L(θ) is the loglikelihood function.
+#
+#  It is clear that L(θ̂) ≥ L(θ̂₀) and thus λ ≥ 0.
+#  If L(θ̂) is much larger than L(θ̂₀), i.e., if λ is very large,
+#  then the general model is much better at explaining the data
+#  and we may conclude that such additional generality is necessary.
+#  In our case this would mean concluding that there is a covariate effect that cannot be ignored.
+#  But how large is enough for us to conclude so?
+#
+#  If the null hypothesis is true,
+#  the test statistic is asymptotically distributed
+#  according to a χ² (chi-squared) distribution with degrees of freedom
+#  equal to the difference in the number of parameters between the two models,
+#  i.e., the degrees of freedom is the number of additional *estimable* parameters in the alternative model.
+#
+#  Let cdf be the cumulative distribution function of the χ² distribution.
+#  Then 1 - cdf(λ) is "the probability of obtaining test results at least as extreme as the result actually observed,
+#  under the assumption that the null hypothesis is correct",
+#  AKA the p-value (https://en.wikipedia.org/wiki/P-value).
+#
+#  If the p-value derived from the LRT statistic is lower than your desired threshold α,
+#  then you will reject the null hypothesis in favor of the alternative hypothesis,
+#  indicating that the alternative model provides a better fit to the data.
+#  In our case, this means concluding that there is a covariate effect on the model.
+#
+#  α is the type-1 error rate, commonly set to 0.05.
+#  A type I error occurs when we reject the null hypothesis
+#  and erroneously state that the study found significant differences when there was no difference.
 
 ## Perform likelihood ratio test between base model and covariate model
 lrt = lrtest(

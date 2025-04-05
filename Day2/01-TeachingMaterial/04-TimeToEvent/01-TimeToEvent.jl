@@ -1,8 +1,8 @@
 ## Time-To-Event Models a.k.a. Survival Analysis
-##   https://tutorials.pumas.ai/html/discrete/05-TimeToEvent.html
-##   Collett, D. (2015). Modelling survival data in medical research. Chapman and Hall/CRC.
-##   Smith, P. J. (2002). Analysis of failure and survival data. Chapman and Hall/CRC.
-##   Ibrahim, J. G., Chen, M. H., Sinha, D., Ibrahim, J. G., & Chen, M. H. (2001). Bayesian survival analysis. New York: Springer.
+#    https://tutorials.pumas.ai/html/discrete/05-TimeToEvent.html
+#    Collett, D. (2015). Modelling survival data in medical research. Chapman and Hall/CRC.
+#    Smith, P. J. (2002). Analysis of failure and survival data. Chapman and Hall/CRC.
+#    Ibrahim, J. G., Chen, M. H., Sinha, D., Ibrahim, J. G., & Chen, M. H. (2001). Bayesian survival analysis. New York: Springer.
 
 using Test
 using DataFrames
@@ -14,75 +14,75 @@ using CairoMakie
 using AlgebraOfGraphics
 
 ## Survival Time
-##   A random variable T with support [0, ∞) which represent the time of death/failure/etc.
-##   Its distribution can be described uniquely by any of the following:
-##
-##   * Probability Density Function (PDF)
-##       f(t)
-##
-##   * Cumulative Distribution Function (CDF)
-##       F(t) = P(T ≤ t) = integral of f between 0 and t
-##       Fraction of individuals who are "dead" at time t
-##       By definition increasing!
-##       F(0) = 0, F(∞) = 1
-##
-##                       F(t + Δt) - F(t)      proportional number of failures      number of failures / total number of entities
-##       F'(t) = f(t) = —————————————————— = ——————————————————————————————————— = ———————————————————————————————————————————————
-##                              Δt            time interval in which they occur          time interval in which they occur
-##
-##       f(t) is the instantaneuous proportional failure rate
-##
-##   * Survival Function
-##       S(t) = P(T > t) = 1 - F(t)
-##       Fraction of individuals who are "alive" at time t
-##       By definition decreasing!
-##       S'(t) = -f(t)
-##
-##   * Hazard Function
-##     the (instantaneuous) proportional failure rate of the entities still functioning at time t
-##
-##             number of failures / entities still functioning
-##     h(t) = —————————————————————————————————————————————————
-##                   time interval in which they occur
-##
-##     Since "entities still functioning" = S(t) * "total number of entities", we have:
-##
-##             f(t)
-##     h(t) = ——————
-##             S(t)
-##
-##     If you are still not convinced, another derivation:
-##
-##             P(t < T < t + Δt | T > t)     P(t < T < t + Δt ∧ T > t)     P(t < T < t + Δt)     F(t + Δt) - F(t)     f(t)
-##     h(t) = ——————————————————————————— = ——————————————————————————— = ———————————————————— = —————————————————— = ——————
-##                       Δt                       Δt ⋅ P(T > t)              Δt ⋅ P(T > t)          Δt ⋅ S(t)         S(t)
-##         
-##     How to get S(t) from h(t)?
-##
-##             f(t)       S′(t)        d
-##     h(t) = —————— = - ——————— = - ———— log(S(t))
-##             S(t)       S(t)        dt
-##
-##     This is a differential equation with known initial condition S(0) = 1.
-##     The solution is
-##
-##     S(t) = exp(-I(t)) where I(t) =  Integral  h(s)
-##                                    s ∈ (0, t)
-##
-##     Why deal with h(t) instead of f(t) or S(t)?
-##     It is easier to model:
-##      * h(t) needs to be non-negative and that's all
-##      * f(t) needs to be positive and integrate to 1 on (0, ∞)
-##      * S(t) needs to be positive and decreasing
-##
+#    A random variable T with support [0, ∞) which represent the time of death/failure/etc.
+#    Its distribution can be described uniquely by any of the following:
+#
+#    * Probability Density Function (PDF)
+#        f(t)
+#
+#    * Cumulative Distribution Function (CDF)
+#        F(t) = P(T ≤ t) = integral of f between 0 and t
+#        Fraction of individuals who are "dead" at time t
+#        By definition increasing!
+#        F(0) = 0, F(∞) = 1
+#
+#                        F(t + Δt) - F(t)      proportional number of failures      number of failures / total number of entities
+#        F'(t) = f(t) = —————————————————— = ——————————————————————————————————— = ———————————————————————————————————————————————
+#                               Δt            time interval in which they occur          time interval in which they occur
+#
+#        f(t) is the instantaneuous proportional failure rate
+#
+#    * Survival Function
+#        S(t) = P(T > t) = 1 - F(t)
+#        Fraction of individuals who are "alive" at time t
+#        By definition decreasing!
+#        S'(t) = -f(t)
+#
+#    * Hazard Function
+#      the (instantaneuous) proportional failure rate of the entities still functioning at time t
+#
+#              number of failures / entities still functioning
+#      h(t) = —————————————————————————————————————————————————
+#                    time interval in which they occur
+#
+#      Since "entities still functioning" = S(t) * "total number of entities", we have:
+#
+#              f(t)
+#      h(t) = ——————
+#              S(t)
+#
+#      If you are still not convinced, another derivation:
+#
+#              P(t < T < t + Δt | T > t)     P(t < T < t + Δt ∧ T > t)     P(t < T < t + Δt)     F(t + Δt) - F(t)     f(t)
+#      h(t) = ——————————————————————————— = ——————————————————————————— = ———————————————————— = —————————————————— = ——————
+#                        Δt                       Δt ⋅ P(T > t)              Δt ⋅ P(T > t)          Δt ⋅ S(t)         S(t)
+#          
+#      How to get S(t) from h(t)?
+#
+#              f(t)       S′(t)        d
+#      h(t) = —————— = - ——————— = - ———— log(S(t))
+#              S(t)       S(t)        dt
+#
+#      This is a differential equation with known initial condition S(0) = 1.
+#      The solution is
+#
+#      S(t) = exp(-I(t)) where I(t) =  Integral  h(s)
+#                                     s ∈ (0, t)
+#
+#      Why deal with h(t) instead of f(t) or S(t)?
+#      It is easier to model:
+#       * h(t) needs to be non-negative and that's all
+#       * f(t) needs to be positive and integrate to 1 on (0, ∞)
+#       * S(t) needs to be positive and decreasing
+#
 
 ## Commonly used parametric distributions for survival times
-##
-## Exponential: parametrized by the shape θ in Distributions.jl.
-## Another common choice is parametrizing by the rate λ = 1 / θ.
-## h(t) = λ is the hazard rate of the Exponential distribution
-## constant hazard <--> memoryless property
-## (sometimes people denote the hazard by λ(t) too)
+#
+#  Exponential: parametrized by the shape θ in Distributions.jl.
+#  Another common choice is parametrizing by the rate λ = 1 / θ.
+#  h(t) = λ is the hazard rate of the Exponential distribution
+#  constant hazard <--> memoryless property
+#  (sometimes people denote the hazard by λ(t) too)
 x = 0:0.1:12.5
 λ = [0.1, 0.2, 0.5]
 for (fun, label) in [(pdf, "PDF"), (cdf, "CDF")]
@@ -106,12 +106,12 @@ for (fun, label) in [(pdf, "PDF"), (cdf, "CDF")]
 end
 
 ## Weibull: parametrized by the shape α and the scale θ
-## h(t) = (α/θ) * (t/θ)^(α-1)
-## If α = 1, h(t) is constant: the distribution is exponential
-## If α < 1, h(t) is decreasing: the longer you survive the less likely you are to die
-##                               (e.g., most failures are due to defective items that fail early)
-## If α > 1, h(t) is increasing: the longer you survive the more likely you are to die
-##                               (e.g., most failures are due to old age)
+#  h(t) = (α/θ) * (t/θ)^(α-1)
+#  If α = 1, h(t) is constant: the distribution is exponential
+#  If α < 1, h(t) is decreasing: the longer you survive the less likely you are to die
+#                                (e.g., most failures are due to defective items that fail early)
+#  If α > 1, h(t) is increasing: the longer you survive the more likely you are to die
+#                                (e.g., most failures are due to old age)
 x = 0:0.1:10.0
 αθ = Iterators.product([0.5, 1.5, 3.0], [2, 3, 5])
 α = vec(getindex.(αθ, 1))
@@ -136,59 +136,57 @@ for (fun, label) in [(pdf, "PDF"), (cdf, "CDF")]
 end
 
 ## Three approaches to estimating the survival function:
-##   1. Kaplan-Meyer Estimator
-##        non-parametric approach
-##          * pro: no hypothesis on the shape of the survival function is necessary
-##          * con: resulting survival function is not smooth
-##          * con: difficult to exploit covariates
-##   2. Cox Proportional Hazards Model
-##        semi-parametric approach:
-##          non-parametric baseline + parametric model using covariates
-##   3. Accelerated Failure Time Model
-##        parametric approach using a parametrized distribution family
-
-
+#    1. Kaplan-Meyer Estimator
+#         non-parametric approach
+#           * pro: no hypothesis on the shape of the survival function is necessary
+#           * con: resulting survival function is not smooth
+#           * con: difficult to exploit covariates
+#    2. Cox Proportional Hazards Model
+#         semi-parametric approach:
+#           non-parametric baseline + parametric model using covariates
+#    3. Accelerated Failure Time Model
+#         parametric approach using a parametrized distribution family
 
 ## Kaplan-Meier Estimator
-##   https://en.wikipedia.org/wiki/Kaplan%E2%80%93Meier_estimator
-##
-## Given N samples tᵢ from a survival time random variable T,
-## estimate the survival function.
-## Equivalently, we can consider that we have a single sample
-## from each of N i.i.d. Tᵢ survival times.
-## These samples will in practice come from different subjects,
-## which are assumed to behave all in the same way
-## and not affect each other in any way.
-##
-## 1. Remove duplicate times, getting a set
-##      {tₖ} for k = 1,...,K
-##    where K ≤ N.
-##
-## 2. Estimate the survival function as
-##    
-##                         dₖ
-##   S(t) =  Product  1 - ————  
-##          k: tₖ ≤ t      nₖ
-##
-##   where
-##     * dₖ is the number of deaths at time tₖ
-##     * nₖ is the number of individuals known to have survived up to time tₖ
-##       (they may have died at time tₖ or later, but not earlier)
-##
-##   Actually, there is a much simpler formula!
-##
-##                                         1                       n. of individuals who died before or at time t
-##   S(t) = 1 - F(t) = 1 - P(T ≤ t) = 1 - ———    Sum     dₖ = 1 - ————————————————————————————————————————————————
-##                                         N   k: tₖ ≤ t                      total number of individuals
-##
-##  Why would anyone use the more complicated product formula?
-##  Bacause it works with censoring.
-##
-##  A survival observation is censored
-##  when the subject was only monitored up to a certain time t̃
-##  without it failing or dying .
-##  Such an observation still brings information about the survival function,
-##  because it tells us that T > t̃.
+#    https://en.wikipedia.org/wiki/Kaplan%E2%80%93Meier_estimator
+#
+#  Given N samples tᵢ from a survival time random variable T,
+#  estimate the survival function.
+#  Equivalently, we can consider that we have a single sample
+#  from each of N i.i.d. Tᵢ survival times.
+#  These samples will in practice come from different subjects,
+#  which are assumed to behave all in the same way
+#  and not affect each other in any way.
+#
+#  1. Remove duplicate times, getting a set
+#       {tₖ} for k = 1,...,K
+#     where K ≤ N.
+#
+#  2. Estimate the survival function as
+#     
+#                          dₖ
+#    S(t) =  Product  1 - ————  
+#           k: tₖ ≤ t      nₖ
+#
+#    where
+#      * dₖ is the number of deaths at time tₖ
+#      * nₖ is the number of individuals known to have survived up to time tₖ
+#        (they may have died at time tₖ or later, but not earlier)
+#
+#    Actually, there is a much simpler formula!
+#
+#                                          1                       n. of individuals who died before or at time t
+#    S(t) = 1 - F(t) = 1 - P(T ≤ t) = 1 - ———    Sum     dₖ = 1 - ————————————————————————————————————————————————
+#                                          N   k: tₖ ≤ t                      total number of individuals
+#
+#   Why would anyone use the more complicated product formula?
+#   Bacause it works with censoring.
+#
+#   A survival observation is censored
+#   when the subject was only monitored up to a certain time t̃
+#   without it failing or dying .
+#   Such an observation still brings information about the survival function,
+#   because it tells us that T > t̃.
 
 ## Kaplan-Meier example
 using Survival
@@ -206,45 +204,42 @@ draw(
 
 
 ## Cox Proportional Hazards Model
-##
-## We now have one sample from each of N independent survival times Tᵢ.
-## The Tᵢ are no longer assumed to be identically distributed
-## (each subject has its own surivival time distribution)
-## and we want to use covariates to model the difference between them
-## (individualize the survival distribution to each subject).
-##
-## The hazard is modelled as
-##   h(t) = h₀(t) exp( β₁ x₁ + β₂ x₂ + … + βₚ xₚ )
-## where
-##   * h₀(t) is the baseline hazard, a non-parametric estimate common to all subjects
-##   * xⱼ are the covariates
-##   * βⱼ are coefficients to be estimated (the parametric part)
+#
+#  We now have one sample from each of N independent survival times Tᵢ.
+#  The Tᵢ are no longer assumed to be identically distributed
+#  (each subject has its own surivival time distribution)
+#  and we want to use covariates to model the difference between them
+#  (individualize the survival distribution to each subject).
+#
+#  The hazard is modelled as
+#    h(t) = h₀(t) exp( β₁ x₁ + β₂ x₂ + … + βₚ xₚ )
+#  where
+#    * h₀(t) is the baseline hazard, a non-parametric estimate common to all subjects
+#    * xⱼ are the covariates
+#    * βⱼ are coefficients to be estimated (the parametric part)
 
 ## Accelerated Failure Time (AFT) Model
-##
-## Like Cox Proportional Hazards Model,
-## but with h₀(t) begin the hazard function of a parametrized family of distributions.
-## This is a fully parametric approach.
-##
+#
+#  Like Cox Proportional Hazards Model,
+#  but with h₀(t) begin the hazard function of a parametrized family of distributions.
+#  This is a fully parametric approach.
+#
 
-################################################################################################
-##
 ## Survival modelling in Pumas
-##
 
 ## Test dataset
-## ID: subject id
-## EVID: event type
-##       3 -> reset event
-##       0 -> observation event
-## DV: measurement (meaningful valid when EVID = 0)
-##     1 -> failure events
-##     0 -> censoring event
+#  ID: subject id
+#  EVID: event type
+#        3 -> reset event
+#        0 -> observation event
+#  DV: measurement (meaningful valid when EVID = 0)
+#      1 -> failure events
+#      0 -> censoring event
 using PharmaDatasets
 tte_single = dataset("tte_single")
 
 ## The EVID = 3 are not necessary (at least in Pumas)
-## Just discard them
+#  Just discard them
 tte_single_3 = @rsubset tte_single :EVID == 3
 @test all(iszero, tte_single_3[:, :TIME])
 @test all(iszero, tte_single_3[:, :DV])
@@ -386,7 +381,7 @@ tte_wei_model = @model begin
 end
 
 ## Gompertz AFT Model
-##   https://en.wikipedia.org/wiki/Gompertz_distribution
+#    https://en.wikipedia.org/wiki/Gompertz_distribution
 tte_gomp_model = @model begin
   @param begin
     # Parameters of the Gompertz distribution corresponding to the baseline hazard
@@ -477,8 +472,8 @@ function hazard_gompertz(param, DOSE, t)
 end
 
 ## Survival functions
-## S(t) = exp(-I(t)) where I(t) =  Integral  h(s)
-##                                s ∈ (0, t)
+#  S(t) = exp(-I(t)) where I(t) =  Integral  h(s)
+#                                 s ∈ (0, t)
 using QuadGK
 function survival_exponential(param, DOSE, t)
   I, err = quadgk(0.0, t) do s
@@ -567,6 +562,6 @@ end
 simpop = simobstte(tte_wei_model, tte_single_pop, coef(tte_single_wei_fit); maxT=500.0, nT=50)
 
 ## Final Notes
-##  * do not use random effects in a survival model
-##  * unless the random effects appear in other parts of the model such as the PK
-##  * repeated events (multiple events with DV = 1) are also supported
+#   * do not use random effects in a survival model
+#   * unless the random effects appear in other parts of the model such as the PK
+#   * repeated events (multiple events with DV = 1) are also supported
