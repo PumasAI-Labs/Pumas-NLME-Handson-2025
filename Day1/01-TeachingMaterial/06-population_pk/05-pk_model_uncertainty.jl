@@ -17,8 +17,7 @@
 # - https://link.springer.com/article/10.1007/s10928-016-9487-8
 
 # Import the previous code that returns the fitted Pumas model
-include(joinpath("..","..", "..", "Day1", "01-TeachingMaterial",
-    "06-population_pk", "03-pk_model_fitting.jl")) 
+include("03-pk_model_fitting.jl")  # This gives us the fitted model, warfarin_pkmodel_fit
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES FOR PARAMETER UNCERTAINTY

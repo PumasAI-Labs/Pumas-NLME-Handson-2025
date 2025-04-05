@@ -1,4 +1,13 @@
-using Pumas
+# =============================================================================
+# Population PK Modeling in Pumas - Hands-on
+# =============================================================================
+
+# Import the previous code that returns the fitted Pumas model
+include(joinpath("..","01-TeachingMaterial","06-population_pk","03-pk_model_fitting.jl"))  # This gives us the fitted base model, warfarin_pkmodel_fit
+
+# -----------------------------------------------------------------------------
+# 1. Exercise 1: Initial Parameter Exploration
+# -----------------------------------------------------------------------------
 
 @info """
 Exercise 1: Initial Parameter Exploration
@@ -13,36 +22,53 @@ Using the warfarin PK model:
 4. Document which changes lead to better/worse fits
 """
 
-# Your code here
+# Initial parameters from the base model
+# your code here
 
+# New fit with new initial values
+# your code here
+
+# Model comparison
+#compare_estimates(;model1, model2))
+# your code here
+
+
+# -----------------------------------------------------------------------------
+# 2. Exercise 2: Evaluate Alternative Model Structure
+# -----------------------------------------------------------------------------
 
 @info """
-Exercise 2: Evaluate Alternative Model Structures
+Exercise 2: Evaluate Alternative Model Structure
 -------------------------------------
 Using the warfarin PK model:
 1. Add a second compartment for drug distribution
 2. Compare the model fits with the initial model
 3. Document which changes lead to better/worse fits
-2. Replace lag time by transit compartments for the absorption
 """
 
-# Your code here
+# Model definition with 2 compartments
+warfarin_pkmodel_2cmt = @model begin
 
+   # your code here
+
+end
+
+# Fit the model
+# your code here
+
+# Parameter uncertainty, Diagnostic plots and VPC
+# your code here
+
+# Model comparison
+# your code here
+
+
+# -----------------------------------------------------------------------------
+# 3. Exercise 3: Evaluate correlation between ηCL and ηV1
+# -----------------------------------------------------------------------------
 
 @info """
-Exercise 3: Evaluate Alternative Model Structures
--------------------------------------
-Using the warfarin PK model:
-1. Use Gamma distribution for the absorption
-2. Compare the model fits with the initial model
-3. Document which changes lead to better/worse fits
-"""
-
-# Your code here
-
-
-@info """
-Exercise 4: Evaluate correlation between ηCL and ηV1
+Exercise 3: Evaluate correlation between ηCL and ηV1
 -------------------------------------
 Using the warfarin PK model:
 1. Add correlation between ηCL and ηV1
@@ -50,11 +76,16 @@ Using the warfarin PK model:
 3. Document which changes lead to better/worse fits
 """
 
-# Your code here
 
+# your code here
+
+
+# -----------------------------------------------------------------------------
+# 4. Exercise 4: Evaluate covariate effect
+# -----------------------------------------------------------------------------
 
 @info """
-Exercise 5: Evaluate sex effect on CL
+Exercise 4: Evaluate sex effect on CL
 -------------------------------------
 Using the warfarin PK model:
 1. Add sex effect on CL

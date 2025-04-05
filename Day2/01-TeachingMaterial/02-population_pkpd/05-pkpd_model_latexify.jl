@@ -1,5 +1,5 @@
 # =============================================================================
-# Population PK-PD Modeling in Pumas - Part 3: Model Documentation
+# Population PK-PD Modeling in Pumas - Part 5: Model Documentation
 # =============================================================================
 # LaTeX equations are uself for:
 # 1. Scientific documentation
