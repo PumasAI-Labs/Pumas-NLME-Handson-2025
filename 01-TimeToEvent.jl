@@ -543,6 +543,29 @@ draw(
   axis=(; xticks=0:100:500, yticks=0.0:0.2:1.0, limits=((0, nothing), (0, nothing))),
 )
 
+## VPCs
+_vpc_exp = vpc(tte_single_exp_fit; stratify_by=[:DOSE])
+begin
+  fig = vpc_plot(_vpc_exp; figure=(; size=(750, 320)))
+  Makie.Label(fig.figure[0, :], "Exponential AFT Model"; fontsize=20)
+  display(fig)
+end
+_vpc_wei = vpc(tte_single_wei_fit; stratify_by=[:DOSE])
+begin
+  fig = vpc_plot(_vpc_wei; figure=(; size=(750, 320)))
+  Makie.Label(fig.figure[0, :], "Weibull AFT Model"; fontsize=20)
+  display(fig)
+end
+_vpc_gomp = vpc(tte_single_gomp_fit; stratify_by=[:DOSE])
+begin
+  fig = vpc_plot(_vpc_gomp; figure=(; size=(750, 320)))
+  Makie.Label(fig.figure[0, :], "Gompertz AFT Model"; fontsize=20)
+  display(fig)
+end
+
+## Simulations
+simpop = simobstte(tte_wei_model, tte_single_pop, coef(tte_single_wei_fit); maxT=500.0, nT=50)
+
 ## Final Notes
 ##  * do not use random effects in a survival model
 ##  * unless the random effects appear in other parts of the model such as the PK
