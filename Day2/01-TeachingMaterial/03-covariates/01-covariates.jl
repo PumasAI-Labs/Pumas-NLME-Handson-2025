@@ -492,7 +492,7 @@ display(vpc_plot(vpc(mod_fit_sexwt)))
 ## Test statistic:
 ##
 ##             sup {L(θ) s.t. θ ∈ 𝚯₀}            L(θ̂₀)
-## λ = -2 log ------------------------- = -2 log ------- = 2 (l(θ̂) - l(θ̂₀))
+## λ = -2 log ————————————————————————— = -2 log ——————— = 2 (l(θ̂) - l(θ̂₀))
 ##             sup {L(θ) s.t. θ ∈ 𝚯 }            L(θ̂ )
 ##
 ## where θ̂ is the Maximum Likelihood Estimate (MLE) of the parameters obtained using the general model,
