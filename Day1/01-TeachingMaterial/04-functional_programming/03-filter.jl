@@ -33,8 +33,13 @@ obs = [missing, 0.067, 110, 220, 220, missing, 110, 58, missing, 76]
 # filter(i -> i != missing, obs)    # WRONG: comparison with missing is always missing
 
 # Correct way: use ismissing function
-filter(!ismissing, obs)    # Remove all missing values
+filter(!ismissing, obs)   # Remove all missing values
                           # ismissing(x) returns true if x is missing
+
+# Also correct
+skipmissing(obs) # iterator, does not allocate memory
+collect(skipmissing(obs)) # now a vector
+sum(skipmissing(obs)) # computes the sum without allocating a new Vector
 
 # -----------------------------------------------------------------------------
 # 3. COUNTING WITH PREDICATES
