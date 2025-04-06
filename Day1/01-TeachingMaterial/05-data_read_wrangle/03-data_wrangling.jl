@@ -92,7 +92,7 @@ FSZV: Volume scaling factor
 FSZCL: Clearance scaling factor
 DVNAME: Observation type
 CMT: Compartment number
-EVID: Event identifier"
+EVID: Event identifier
 """
 
 # -----------------------------------------------------------------------------

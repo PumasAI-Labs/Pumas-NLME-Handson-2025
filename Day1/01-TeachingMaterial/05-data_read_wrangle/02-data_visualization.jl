@@ -167,26 +167,6 @@ data(
 )
 
 # -----------------------------------------------------------------------------
-# 10. COLOR BY AMOUNT
-# -----------------------------------------------------------------------------
-
-data(
-    dropmissing(df, "DV")
-) * mapping(
-    "TIME",
-    "DV",
-    group = "ID" => nonnumeric,
-    row = "DVID" => (t -> t == 1 ? "PK" : "PD"),
-    color = "AMOUNT"
-) * visual(
-    Lines
-) |> f -> draw(
-    f;
-    facet = (;linkyaxes = :minimal),
-    figure = (;title = "Warfarin data"),
-)
-
-# -----------------------------------------------------------------------------
 # TIPS AND BEST PRACTICES
 # -----------------------------------------------------------------------------
 # 1. General structure of plotting layers consist of data, mapping and visual
