@@ -42,6 +42,13 @@ df = CSV.read(
 @info "First 5 rows of data for initial inspection:"
 first(df, 5)
 
+# All data for first subject
+mask = df[:, :ID] .== "1"
+df[mask, :]
+# More compact
+using DataFramesMeta
+@rsubset df :ID == "1"
+
 # Basic data summary
 @info "Calculating summary statistics..."
 summary_stats = describe(df)
