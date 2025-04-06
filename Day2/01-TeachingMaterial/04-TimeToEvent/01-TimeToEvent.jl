@@ -66,8 +66,10 @@ using AlgebraOfGraphics
 #      This is a differential equation with known initial condition S(0) = 1.
 #      The solution is
 #
-#      S(t) = exp(-I(t)) where I(t) =  Integral  h(s)
-#                                     s ∈ (0, t)
+#      S(t) = exp(-Λ(t))
+#
+#      where Λ(t) =  Integral  h(s)
+#                   s ∈ (0, t)
 #
 #      Why deal with h(t) instead of f(t) or S(t)?
 #      It is easier to model:
@@ -472,7 +474,7 @@ function hazard_gompertz(param, DOSE, t)
 end
 
 ## Survival functions
-#  S(t) = exp(-I(t)) where I(t) =  Integral  h(s)
+#  S(t) = exp(-Λ(t)) where Λ(t) =  Integral  h(s)
 #                                 s ∈ (0, t)
 using QuadGK
 function survival_exponential(param, DOSE, t)
