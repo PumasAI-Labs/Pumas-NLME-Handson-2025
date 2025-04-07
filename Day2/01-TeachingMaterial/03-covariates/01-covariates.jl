@@ -192,20 +192,7 @@ mod_code_sex = @model begin
     # Sampling random effect parameters
     η ~ MvNormal(Ω)
   end
-  @covariates begin
-    """
-    Body Weight (kg)
-    """
-    WEIGHT
-    """
-    Age (years)
-    """
-    AGE
-    """
-    Sex
-    """
-    SEX
-  end
+  @covariates WEIGHT AGE SEX
   @pre begin
     # Effect of female sex on CL
     COVSEXCL = if SEX == "Female"
@@ -285,20 +272,7 @@ mod_code_wt = @model begin
     # Residual unexplained variability
     σpro ∈ RealDomain(; lower=0.0)
   end
-  @covariates begin
-    """
-    Body Weight (kg)
-    """
-    WEIGHT
-    """
-    Age (years)
-    """
-    AGE
-    """
-    Sex
-    """
-    SEX
-  end
+  @covariates WEIGHT AGE SEX
   @random begin
     # Sampling random effect parameters
     η ~ MvNormal(Ω)
@@ -369,20 +343,7 @@ mod_code_sexwt = @model begin
     # Residual unexplained variability
     σpro ∈ RealDomain(; lower=0.0)
   end
-  @covariates begin
-    """
-    Body Weight (kg)
-    """
-    WEIGHT
-    """
-    Age (years)
-    """
-    AGE
-    """
-    Sex
-    """
-    SEX
-  end
+  @covariates WEIGHT AGE SEX
   @random begin
     # Sampling random effect parameters
     η ~ MvNormal(Ω)
