@@ -522,3 +522,114 @@ lrt = lrtest(mod_fit_wt, mod_fit_sexwt)
 lrt = lrtest(mod_fit_sex, mod_fit_wt)
 # This is meaningless, because the models are not nested!
 # Pumas will not check for you, so you have to be careful.
+
+## Let us add one more (clearly wrong) covariate effect
+mod_code_sexwtage = @model begin
+  @param begin
+    # Definition of fixed effect parameters
+    θCL ∈ RealDomain(; lower=0.0)
+    θVC ∈ RealDomain(; lower=0.0)
+    θKA ∈ RealDomain(; lower=0.0)
+    θSEXCLF ∈ RealDomain(; lower=-0.999)
+    θWTCL ∈ RealDomain()
+    θWTVC ∈ RealDomain()
+    θAGEKA ∈ RealDomain()
+    # Random effect parameters
+    # Variance-covariance matrix for inter-individual variability
+    Ω ∈ PSDDomain(3)
+    # Residual unexplained variability
+    σpro ∈ RealDomain(; lower=0.0)
+  end
+  @covariates WEIGHT AGE SEX
+  @random begin
+    # Sampling random effect parameters
+    η ~ MvNormal(Ω)
+  end
+  @pre begin
+    # Effect of female sex on CL
+    COVSEXCL = if SEX == "Female"
+      # For SEX == "Female", estimate the effect
+      1 + θSEXCLF
+    elseif SEX == "Male"
+      # For SEX == "Male", set to the reference value
+      1
+    else
+      # Return error message if specified conditions are not met
+      error("Expected SEX to be either \"Female\" or \"Male\" but the value was: $SEX")
+    end
+
+    # Effect of body weight on CL
+    COVWTCL = (WEIGHT / 70)^θWTCL
+
+    # Effect of body weight on VC
+    COVWTVC = (WEIGHT / 70)^θWTVC
+
+    # Effect of age on KA
+    COVAGEKA = exp(θAGEKA * AGE / 100)
+
+    # Individual PK parameters
+    CL = θCL * exp(η[1]) * COVWTCL * COVSEXCL
+    VC = θVC * exp(η[2]) * COVWTVC
+    KA = θKA * exp(η[3]) * COVAGEKA
+  end
+  @init begin
+    # Define initial conditions
+    Depot = 0.0
+    Central = 0.0
+  end
+  @vars begin
+    # Concentrations in compartments
+    centc := Central / VC
+  end
+  @dynamics begin
+    # Differential equations
+    Depot' = -KA * Depot
+    Central' = KA * Depot - CL * centc
+  end
+  @derived begin
+    # Definition of derived variables
+    # Individual-predicted concentration
+    ipre := @.(Central / VC)
+    # Dependent variable
+    """
+    Warfarin Concentration (mg/L)
+    """
+    pkconc ~ @.Normal(ipre, sqrt((ipre * σpro)^2))
+  end
+end
+init_params_sexwtage = (;
+  θCL=1,
+  θVC=10,
+  θKA=1,
+  θSEXCLF=0.01,
+  θWTCL=0.75,
+  θWTVC=1.0,
+  θAGEKA=0.5,
+  Ω=[0.09 0.01 0.01; 0.01 0.09 0.01; 0.01 0.01 0.09],
+  σpro=0.3,
+)
+
+## Forward Covariate Selection
+covar_result_fwd = covariate_select(
+  mod_code_sexwtage,
+  examp_df_pumas,
+  init_params_sexwtage,
+  FOCE();
+  control_param = (:θSEXCLF, :θWTCL, :θWTVC, :θAGEKA),
+  criterion = aic,
+  method = CovariateSelection.Forward,
+)
+
+## Sorted results
+sort(DataFrame(covar_result_fwd.fits), :criterion)
+
+## Backward Covariate Selection
+covar_result_bwd = covariate_select(
+  mod_code_sexwtage,
+  examp_df_pumas,
+  init_params_sexwtage,
+  FOCE();
+  control_param = (:θSEXCLF, :θWTCL, :θWTVC, :θAGEKA),
+  criterion = aic,
+  method = CovariateSelection.Backward,
+)
