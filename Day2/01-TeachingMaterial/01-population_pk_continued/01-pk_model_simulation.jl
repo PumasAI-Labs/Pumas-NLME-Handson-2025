@@ -50,6 +50,13 @@ sim_plot(
     paginate = true
 )[1]
 
+# Using predict to get preds and ipreds
+preds = predict(warfarin_pkmodel_fit)
+# same as
+#   preds = predict(warfarin_pkmodel, pop_pk, coef(warfarin_pkmodel_fit))
+vscodedisplay(DataFrame(preds))
+subject_fits(preds; separate = true, paginate = true)[1]
+
 # -----------------------------------------------------------------------------
 # 4. SIMULATING FROM FINAL PARAMETER ESTIMATES AND RESAMPLING RANDOM EFFECTS (IIV)
 # -----------------------------------------------------------------------------
@@ -187,6 +194,51 @@ warfarin_pkmodel_vpcsim = mapreduce(vcat, 1:200) do rep
         @rtransform :sim = rep
     end
 end
+
+## Plotting replicates separately for each subject
+df = @rsubset warfarin_pkmodel_vpcsim parse(Int, :id) ≤ 9 # Select the first 9 subject
+data(df) *
+mapping(:time, :conc, layout = :id) *
+visual(Lines, color = (:black, 0.025)) |> draw
+
+## Plotting confidence intervals for each subject
+# First compute the CI bounds by:
+#   1. drop rows which have missing values of conc
+#   2. grouping by :id and :time
+#   3. combining the grouped DataFrames by using median and quantile to get the CIs
+df = @rsubset warfarin_pkmodel_vpcsim parse(Int, :id) ≤ 9 # Select the first 9 subject
+df = combine(
+    groupby(
+        dropmissing(df, :conc),
+        [:id, :time]
+    ),
+    :conc => median => :median,
+    :conc => (x -> quantile(x, 0.1)) => :lb,
+    :conc => (x -> quantile(x, 0.9)) => :ub,
+)
+data(df) *
+mapping(:time, :median, lower = :lb, upper = :ub, layout = :id) *
+visual(LinesFill, label = "80% CI") |> draw
+
+## Plotting multiple CIs
+df = @rsubset warfarin_pkmodel_vpcsim parse(Int, :id) ≤ 9 # Select the first 9 subject
+df = combine(
+    groupby(
+        dropmissing(df, :conc),
+        [:id, :time]
+    ),
+    :conc => median => :median,
+    :conc => (x -> quantile(x, 0.25)) => :lb50,
+    :conc => (x -> quantile(x, 0.75)) => :ub50,
+    :conc => (x -> quantile(x, 0.025)) => :lb95,
+    :conc => (x -> quantile(x, 0.975)) => :ub95,
+)
+data(df) * (
+    mapping(:time, :median, lower = :lb95, upper = :ub95, layout = :id) *
+    visual(LinesFill, color = :darkblue, fillalpha = 0.15, linewidth = 0, label = "95% CI") +
+    mapping(:time, :median, lower = :lb50, upper = :ub50, layout = :id) *
+    visual(LinesFill, color = :darkblue, fillalpha = 0.25, label = "IQR")
+) |> draw
 
 # -----------------------------------------------------------------------------
 # 6. SIMULATING ALTERNATIVE DOSING REGIMENS
