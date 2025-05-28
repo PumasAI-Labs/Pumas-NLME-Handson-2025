@@ -2,5 +2,4 @@
 
 Course material for Pumas workshops
 
-- [One day Pumas workshop](OneDay.md)
-- [Three days Pumas workshop](ThreeDay.md)
+A [three days Pumas workshop](ThreeDays.md)
