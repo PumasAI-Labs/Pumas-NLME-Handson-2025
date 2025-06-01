@@ -6,29 +6,16 @@
 
 ## Schedule
 
-| Time          | Duration | Activity                                                 |
-|---------------|----------|----------------------------------------------------------|
-| 09:00 - 09:30 | 30m      | Welcome and Environment Setup                            |
-| 09:30 - 10:15 | 45m      | PopPK Modeling I                                         |
-| 10:15 - 10:30 | 15m      | ☕ Morning Break                                          |
-| 10:30 - 11:15 | 45m      | PopPK Modeling II                                        |
-| 11:15 - 12:30 | 75m      | 🔨 PopPK Modeling Hands-on                               |
-| 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                           |
-| 13:30 - 14:15 | 45m      | Uncertainty Estimation and Model Diagnostics             |
-| 14:15 - 15:15 | 60m      | 🔨 Uncertainty Estimation and Model Diagnostics Hands-on |
-| 15:15 - 15:30 | 15m      | ☕ Afternoon Break                                        |
-| 15:30 - 16:15 | 45m      | PopPK and Exposure Simulation                            |
-| 16:15 - 17:00 | 45m      | 🔨 PopPK and Exposure Simulation Hands-on                |
-
-
-### Teaching Material
-
-1. [Data reading and wrangling](./TeachingMaterial/data_read_wrangle)
-2. [Population PK](./TeachingMaterial/population_pk)
-3. [Population PK, continued](./TeachingMaterial/population_pk_continued)
-
-### Exercises
-
-1. [Data reading](./Exercises/05-data_reading_exercise.jl) - [Solution](./Solutions/05-data_reading_exercise.jl)
-2. [Data wrangling](./Exercises/06_data_wrangling_exercise.jl) - [Solution](./Solutions/06_data_wrangling_exercise.jl)
-3. [Population PK](./Exercises/07-pk_model_exercise.jl) - [Solution](./Solutions/07-pk_model_exercise.jl)
+| Time          | Duration | Activity                                                 | Files |
+|---------------|----------|----------------------------------------------------------|-------|
+| 09:00 - 09:30 | 30m      | Welcome and Environment Setup                            |       |
+| 09:30 - 10:15 | 45m      | Data Wrangling                                           | [lecture files](./TeachingMaterial/data_read_wrangle/) |
+| 10:15 - 10:30 | 15m      | ☕ Morning Break                                          |       |
+| 10:30 - 11:15 | 45m      | PopPK Modeling                                           | [lecture files](./TeachingMaterial/population_pk/) |
+| 11:15 - 12:30 | 75m      | 🔨 Data Wrangling and PopPK Hands-on                     | [data reading](./Exercises/05-data_reading_exercise.jl) ([solutions](./Solutions/05-data_reading_solution.jl)) </br> [data wrangling](./Exercises/06-data_wrangling_exercise.jl) ([solutions](./Solutions/06-data_wrangling_solution.jl)) |
+| 12:30 - 13:30 | 60m      | 🍽️ Lunch Break                                           |       |
+| 13:30 - 14:15 | 45m      | Uncertainty Estimation and Model Diagnostics             | [lecture files](./TeachingMaterial/population_pk/) |
+| 14:15 - 15:15 | 60m      | 🔨 Uncertainty Estimation and Model Diagnostics Hands-on | [PopPK exerices](./Exercises/07-pk_model_exercise.jl) ([solutions](./Solutions/07-pk_model_solutions.jl)) | 
+| 15:15 - 15:30 | 15m      | ☕ Afternoon Break                                        |       |
+| 15:30 - 16:15 | 45m      | PopPK and Exposure Simulation                            | [lecture files](./TeachingMaterial/population_pk_continued/) |
+| 16:15 - 17:00 | 45m      | 🔨 PopPK and Exposure Simulation Hands-on                | Use lecture file |
