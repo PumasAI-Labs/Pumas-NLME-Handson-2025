@@ -1,6 +1,6 @@
-# Pumas-NLME-Handson Workshop
+# Pumas NLME Handson Workshop
 
 Course material for Pumas workshops
 
-A [one day Pumas workshop](OneDay.md)
-A [three days Pumas workshop](ThreeDay.md)
+- [One day Pumas workshop](OneDay.md)
+- [Three days Pumas workshop](ThreeDay.md)
