@@ -5,8 +5,10 @@
 # The simobs function is used to simulate from Pumas models
 
 # Import the previous code that returns the fitted Pumas model
-include(joinpath("..","..", "..", "Day1", "01-TeachingMaterial",
-    "06-population_pk", "03-pk_model_fitting.jl")) 
+include(joinpath("..",
+    "population_pk",
+    "03-pk_model_fitting.jl"
+)) 
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES FOR SIMULATIONS

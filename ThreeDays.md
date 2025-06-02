@@ -30,13 +30,13 @@
 
 ### Exercises
 
-1. [Variables](./Exercises/01-variables_exercise.jl) - [Solution](./Solutions/01-variables_exercise.jl)
-2. [Syntax](./Exercises/02-syntax_exercise.jl) - [Solution](./Solutions/02-syntax_exercise.jl)
-3. [Functions](./Exercises/03-functions_exercise.jl) - [Solution](./Solutions/03-functions_exercise.jl)
-4. [Functional programming](./Exercises/04-functional_exercise.jl) - [Solution](./Solutions/04-functional_exercise.jl)
-5. [Data reading](./Exercises/05-data_reading_exercise.jl) - [Solution](./Solutions/05-data_reading_exercise.jl)
-5. [Data wrangling](./Exercises/06_data_wrangling_exercise.jl) - [Solution](./Solutions/06_data_wrangling_exercise.jl)
-6. [Population PK](./Exercises/07-pk_model_exercise.jl) - [Solution](./Solutions/07-pk_model_exercise.jl)
+1. [Variables](./Exercises/01-variables_exercise.jl) - [Solution](./Solutions/01-variables_solution.jl)
+2. [Syntax](./Exercises/02-syntax_exercise.jl) - [Solution](./Solutions/02-syntax_solution.jl)
+3. [Functions](./Exercises/03-functions_exercise.jl) - [Solution](./Solutions/03-functions_solution.jl)
+4. [Functional programming](./Exercises/04-functional_exercise.jl) - [Solution](./Solutions/04-functional_solution.jl)
+5. [Data reading](./Exercises/05-data_reading_exercise.jl) - [Solution](./Solutions/05-data_reading_solution.jl)
+5. [Data wrangling](./Exercises/06_data_wrangling_exercise.jl) - [Solution](./Solutions/06_data_wrangling_solution.jl)
+6. [Population PK](./Exercises/07-pk_model_exercise.jl) - [Solution](./Solutions/07-pk_model_solution.jl)
 
 ## Day 2: Simulations & PopPK/PD Modeling
 

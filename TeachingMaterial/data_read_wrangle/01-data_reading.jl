@@ -29,7 +29,7 @@ using CSV, DataFrames, Logging
 @info "Note: Using missingstring='.' to handle NONMEM-style missing values"
 
 df = CSV.read(
-    joinpath(@__DIR__, "..", "..", "..", "data", "warfarin.csv"),
+    joinpath(@__DIR__, "..", "..", "data", "warfarin.csv"),
     DataFrame;
     missingstring=["."]
 )
