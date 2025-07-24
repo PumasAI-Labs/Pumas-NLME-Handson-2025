@@ -40,9 +40,8 @@ fig_gof_conc = goodness_of_fit(warfarin_pkmodel_pred,
     observations = [:conc],
     markercolor = :grey,
     markersize = 6,
-    include_legend = true,
-    figurelegend = (
-        position = :b,
+    legend = (
+        position = :bottom,
         framevisible = false,
         orientation = :vertical, 
         tellheight = true,
@@ -88,23 +87,20 @@ npde_vs_predictions(warfarin_pkmodel_pred)
 # predictions
 fig_id_conc = subject_fits(warfarin_pkmodel_pred,
     separate = true,
-    ids = unique(warfarin_pkmodel_preddf.id),
     observations = [:conc],
-    include_legend = true,
-    figurelegend = (
-        position = :b,
+    legend = (
+        position = :bottom,
         framevisible = false,
         orientation = :vertical, 
         tellheight = true,
         tellwidth = false,
         nbanks = 4
     ),
-    facet = (combinelabels = true,),
     paginate = true # this will generate a vector of plots
                     # to avoid that each plot gets too small
 )
 # We can render all plots in one go by calling display on the vector
-display.(fig_id_conc)
+foreach(display, fig_id_conc)
 
 
 # -----------------------------------------------------------------------------
