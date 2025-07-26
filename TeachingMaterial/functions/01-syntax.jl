@@ -102,7 +102,6 @@ q2     # Access median
 # 3. Use explicit return statements for clarity
 # 4. Consider using named tuples for multiple returns
 # 5. Document function behavior with comments
-# 6. Use type annotations when performance is critical
 
 # Try these examples in the REPL!
 # Type ?function in the REPL for more information about functions
