@@ -16,7 +16,7 @@ exp(sqrt(abs(-2)))    # Result: e^√2
 
 # Function composition using ∘ operator (\circ<TAB>)
 # Reading from right to left: abs → sqrt → exp
-my_operation = (exp ∘ sqrt ∘ abs)    # Creates a new function
+my_operation = exp ∘ sqrt ∘ abs      # Creates a new function
 my_operation(-2)                     # Same result as above
 
 # Inline composition without intermediate variable
@@ -30,8 +30,8 @@ my_operation(-2)                     # Same result as above
 x = 1:10    # Range from 1 to 10
 
 # Traditional nested approach to calculate geometric mean
-# geometric_mean = exp(mean(log(x)))
-exp(sum(log.(x)) / length(x))    # Note the broadcast operator (.) for log
+# geometric_mean = exp(mean(log.(x)))
+exp(mean(log.(x)))    # Note the broadcast operator (.) for log
 
 # Function composition approach
 # Steps:
@@ -39,7 +39,7 @@ exp(sum(log.(x)) / length(x))    # Note the broadcast operator (.) for log
 # 2. Calculate mean (sum/length)
 # 3. Take exponential
 geometric_mean = (exp ∘                           # Step 3: exp of result
-                 (i -> sum(i) / length(i)) ∘      # Step 2: mean
+                 mean ∘                           # Step 2: mean
                  (i -> log.(i)))                  # Step 1: log of each element
                  
 # Note: Anonymous functions need parentheses in composition
@@ -62,10 +62,10 @@ geomean(x)    # Same result as our composed function
 
 # Geometric mean using pipes
 # Method 1: Using anonymous functions
-x |> (i -> log.(i)) |> (i -> sum(i) / length(i)) |> exp
+x |> (i -> log.(i)) |> mean |> exp
 
 # Method 2: Using broadcast pipe operator (.|>)
-x .|> log |> (i -> sum(i) / length(i)) |> exp    # Vectorize first operation
+x .|> log |> mean |> exp    # Vectorize first operation
 
 # -----------------------------------------------------------------------------
 # TIPS AND BEST PRACTICES

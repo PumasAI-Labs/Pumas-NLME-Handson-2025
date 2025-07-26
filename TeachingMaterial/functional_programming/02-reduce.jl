@@ -79,6 +79,9 @@ using Statistics    # For statistical functions
 # 3. Divide by (n-1) for sample variance
 reduce(+, map(i -> (i - mean(x))^2, x)) / (length(x) - 1)
 
+# Built-in sum function
+sum(map(i -> (i - mean(x))^2, x)) / (length(x) - 1)
+
 # Built-in variance function for comparison
 var(x)    # Same result as our manual calculation
 
@@ -92,6 +95,9 @@ var(x)    # Same result as our manual calculation
 # Calculate variance using mapreduce
 mapreduce(i -> (i - mean(x))^2, +, x) / (length(x) - 1)
 
+# Bult-in sum function
+sum(i -> (i - mean(x))^2, x) / (length(x) - 1)
+
 # -----------------------------------------------------------------------------
 # TIPS AND BEST PRACTICES
 # -----------------------------------------------------------------------------
@@ -99,7 +105,7 @@ mapreduce(i -> (i - mean(x))^2, +, x) / (length(x) - 1)
 # 2. Provide init value when the reduction might start with empty collection
 # 3. Use mapreduce instead of separate map and reduce for better performance
 # 4. Consider numerical stability in reduction operations
-# 5. Remember that reduce assumes associativity of the operation
+# 5. reduce assumes associativity of the operation - alternatives: (map)foldl and (map)foldr
 # 6. Use broadcasting with reduce for more complex operations
 
 # Try in the REPL:
