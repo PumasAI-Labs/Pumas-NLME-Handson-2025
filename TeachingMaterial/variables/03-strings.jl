@@ -38,8 +38,11 @@ name = "Jess"
 string(greeting, ", ", name)    # Most flexible, can handle non-string types
 
 # Method 2: Using * operator
-greeting * ", " * name          # Efficient for string-only concatenation
+greeting * ", " * name          # Alternative for string-only concatenation
 # Note: + doesn't work for strings in Julia (unlike Python or JavaScript)
+
+# Repeated concatenation
+greeting^2 * ", " * name
 
 # -----------------------------------------------------------------------------
 # 3. STRING INTERPOLATION
@@ -60,8 +63,8 @@ greeting * ", " * name          # Efficient for string-only concatenation
 # Julia provides various functions for string searching
 
 # Checking for substrings
-contains("banana", "ana")       # Returns true (deprecated in newer versions)
-occursin("ana", "banana")      # Modern way to check for substrings
+contains("banana", "ana")      # Returns true
+occursin("ana", "banana")      # Alternative with different order of arguments
 
 # Checking string boundaries
 startswith("banana", "ban")     # Check prefix
@@ -88,7 +91,7 @@ replace(sample_text,           # Replace multiple patterns
 # TIPS AND BEST PRACTICES
 # -----------------------------------------------------------------------------
 # 1. Use string() when mixing strings with other types
-# 2. Prefer * over repeated string() calls for better performance
+# 2. Can use * instead of string() for string-only concatenation
 # 3. Use triple quotes for multi-line strings or strings with quotes
 # 4. String interpolation with $() is powerful for complex expressions
 # 5. Strings are immutable - operations create new strings

@@ -30,12 +30,13 @@ A = [
     ]
 
 # Single line syntax (using semicolons)
-A2 = [1 2 3; 4 5 6; 7 8 9]        # Semicolons separate rows
-A == A2                           # Both methods create identical matrices
+A2 = [1 2 3; 4 5 6; 7 8 9]          # Semicolons separate rows
+A3 = [1; 4; 7;; 2; 5; 8;; 3; 6; 9]  # Semicolons separate rows, double semicolons separate columns
+A == A2 == A3                       # All methods create identical matrices
 
 # Creating matrix from vector
 # Note: Julia is column-major (stores columns contiguously)
-reshape([1, 2, 3, 4, 5, 6, 7, 8, 9], (3, 3))  # Different from A due to column-major order
+reshape([1, 2, 3, 4, 5, 6, 7, 8, 9], 3, 3)  # Different from A due to column-major order
 
 # -----------------------------------------------------------------------------
 # 3. TUPLES
@@ -53,7 +54,7 @@ a_named_tuple = (id = 1,wt = 79, ht = 176, sex = "Female", ispatient = true)
 # -----------------------------------------------------------------------------
 # 4. INDEXING AND SLICING
 # -----------------------------------------------------------------------------
-# Julia uses 1-based indexing (first element is at index 1)
+# Standard Julia arrays use 1-based indexing (first element is at index 1)
 
 # Vector indexing
 numeric[1]                         # First element (Julia starts at 1)
@@ -68,7 +69,7 @@ numeric[1:3]                      # Get first three elements
 A[1:2, 2:3]                       # Get submatrix (rows 1-2, columns 2-3)
 
 # Using begin and end keywords
-numeric[begin+1:end-1]            # All elements except first and last
+numeric[(begin+1):(end-1)]        # All elements except first and last
 A[begin:end, begin:2]             # All rows, first two columns
 
 # Index NamedTuple by name with Symbol
@@ -92,6 +93,9 @@ height = Dict("Alice" => 165,      # => operator creates pairs
 # Accessing dictionary values
 height["Bob"]                      # Get value by key
 height["Alice"]                    # Returns 165
+
+# Access dictionaries with fallback
+get(height, "John", missing)       # Returns missing
 
 # Modifying dictionary
 height["Bob"] = 175                # Modify existing value
