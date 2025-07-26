@@ -7,7 +7,6 @@
 using Test
 using DataFrames
 using DataFramesMeta
-using Distributions
 using Pumas
 using PumasUtilities
 using CairoMakie
@@ -196,8 +195,7 @@ t = [2, 2, 3, 5, 5, 7, 9, 16, 16, 18] # event times
 s = [1, 1, 0, 1, 0, 1, 1, 1, 1, 0]    # 0 means censoring, 1 means failure
 survival_fit = fit(KaplanMeier, t, s)
 plt =
-  data((; t=survival_fit.events.time, s_t=survival_fit.survival)) *
-  mapping(:t => L"t", :s_t => L"S(t)") *
+  mapping(survival_fit.events.time => L"t", survival_fit.survival => L"S(t)") *
   visual(Stairs; step=:post, linewidth=3)
 draw(
   plt;
@@ -251,10 +249,10 @@ tte_single = @rsubset tte_single :EVID != 3
 describe(tte_single)
 
 ## How many IDs?
-@test unique(sort(tte_single[:, :ID])) == 1:300
+@test sort(unique(tte_single[:, :ID])) == 1:300
 
 ## How many possible values of DOSE?
-@test unique(sort(tte_single[:, :DOSE])) == [0, 1]
+@test sort(unique(tte_single[:, :DOSE])) == [0, 1]
 
 ## Mean failure time depends on DOSE
 @by tte_single :DOSE :mean_failure = mean(:TIME)
@@ -476,23 +474,18 @@ end
 ## Survival functions
 #  S(t) = exp(-Λ(t)) where Λ(t) =  Integral  h(s)
 #                                 s ∈ (0, t)
-using QuadGK
 function survival_exponential(param, DOSE, t)
-  I, err = quadgk(0.0, t) do s
-    hazard_exponential(param, DOSE, s)
-  end
+  I = hazard_exponential(param, DOSE, 0.0) * t
   return exp(-I)
 end
 function survival_weibull(param, DOSE, t)
-  I, err = quadgk(0.0, t) do s
-    hazard_weibull(param, DOSE, s)
-  end
+  hazard_weibull_0 = hazard_weibull(param, DOSE, 0.0)
+  hazard_weibull_t = hazard_weibull(param, DOSE, t)
+  I = (hazard_weibull_t * param.λ̄ * t + 1e-10 * (hazard_weibull_t - hazard_weibull_0)) / (param.λ̄ * param.K)
   return exp(-I)
 end
 function survival_gompertz(param, DOSE, t)
-  I, err = quadgk(0.0, t) do s
-    hazard_gompertz(param, DOSE, s)
-  end
+  I = (hazard_gompertz(param, DOSE, t) - hazard_gompertz(param, DOSE, 0.0)) / param.K
   return exp(-I)
 end
 
