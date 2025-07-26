@@ -12,7 +12,7 @@
 using Pumas
 using PharmaDatasets
 using CSV, ReadStatTables
-using Distributions, Random, StatsBase
+using Random, StatsBase
 using DataFrames, DataFramesMeta, Chain
 using CategoricalArrays
 using Dates
@@ -20,52 +20,8 @@ using CairoMakie, AlgebraOfGraphics, ColorSchemes, PairPlots
 using PumasPlots
 using SummaryTables
 
-## Load the warfarin dataset from PharmaDatasets and modify so that it is ready for the examples
-examp_df = @chain "paganz2024/warfarin_long" begin
-  dataset
-  # There are some observation's commented out "NONMEM-style"
-  # Uncomment out those observations
-  @rtransform :ID = occursin.("#", :ID) ? replace(:ID, "#" => "") : :ID
-  # Add columns to specify dosing information for non-linear mixed effects modeling
-  @rtransform begin
-    # Set event ID variable (1 = dosing events, 0 = observations)
-    :evid = :DVID == 0 ? 1 : 0
-    # Set compartment variable for dosing events (1 = depot)
-    :cmt = :DVID == 0 ? 1 : missing
-  end
-  # Check for duplicate records and a small number to their time to ensure they are unique
-  @groupby :ID :TIME :evid :DVID
-  @transform :SEQ = eachindex(:DV)
-  @rtransform :TIME = :TIME + (:SEQ - 1) * 1e-6
-  # Convert the DataFrame from long to wide format
-  unstack(
-    # Input DataFrame
-    _,
-    # rowkeys (i.e., variable that stores the identifier variables)
-    :DVID,
-    # colkeys (i.e., variable that stores the measurement variables)
-    :DV;
-    # Option to rename the new columns created for the measurement variables
-    # Here an anonymous function is used to create a new column name based on
-    # the identifier variable (DVID = x)
-    renamecols=x -> Symbol(:DV_, x),
-  )
-  # Create descriptive labels for sex
-  @transform @astable begin
-    :SEX = recode(:SEX, 0 => "Female", 1 => "Male")
-    :SEX = categorical(:SEX; ordered=true, levels=["Male", "Female"])
-  end
-  # Rename columns
-  @rename begin
-    :id = :ID
-    :time = :TIME
-    :amt = :AMOUNT
-    :pkconc = :DV_1
-    :pdpca = :DV_2
-  end
-  # Retain only necessary columns
-  @select :id :time :amt :evid :cmt :pkconc :pdpca :WEIGHT :AGE :SEX
-end
+## Load the warfarin dataset from PharmaDatasets
+examp_df = dataset("pumas/warfarin_pumas")
 
 ## The Warfarin Population Pharmacokinetic Model is a 1-compartment model with linear elimination and first-order absorption,
 #  log-normally distributed inter-individual variability on clearance (CL) and volume of distribution of the central compartment (VC),
@@ -114,17 +70,17 @@ mod_code = @model begin
     """
     Warfarin Concentration (mg/L)
     """
-    pkconc ~ @.Normal(ipre, sqrt((ipre * σpro)^2))
+    conc ~ @. Normal(ipre, abs(ipre) * σpro)
   end
 end
 
 ## Fit the model
-examp_df_pumas = read_pumas(examp_df; observations=[:pkconc])
-init_params = (θCL=1, θVC=10, θKA=1, Ω=[0.09 0.01; 0.01 0.09], σpro=0.3)
-mod_fit = fit(mod_code, examp_df_pumas, init_params, FOCE())
+examp_df_pumas = read_pumas(examp_df; observations=[:conc])
+params = (θCL=1, θVC=10, θKA=1, Ω=[0.09 0.01; 0.01 0.09], σpro=0.3)
+mod_fit = fit(mod_code, examp_df_pumas, params, FOCE())
 
 ## Read covariates from the dataset into the Population
-examp_df_pumas = read_pumas(examp_df; observations=[:pkconc], covariates=[:WEIGHT, :AGE, :SEX])
+examp_df_pumas = read_pumas(examp_df; observations=[:conc], covariates=[:wtbl, :age, :sex])
 
 ## Convert to a DataFrame
 examp_df_pumas_df = DataFrame(examp_df_pumas)
@@ -192,26 +148,26 @@ mod_code_sex = @model begin
     # Sampling random effect parameters
     η ~ MvNormal(Ω)
   end
-  @covariates WEIGHT AGE SEX
+  @covariates wtbl age sex
   @pre begin
     # Effect of female sex on CL
-    COVSEXCL = if SEX == "Female"
-      # For SEX == "Female", estimate the effect
+    COVSEXCL = if sex == "F"
+      # For sex == "F", estimate the effect
       1 + θSEXCLF
-    elseif SEX == "Male"
-      # For SEX == "Male", set to the reference value
+    elseif sex == "M"
+      # For sex == "M", set to the reference value
       1
     else
       # Return error message if specified conditions are not met
-      error("Expected SEX to be either \"Female\" or \"Male\" but the value was: $SEX")
+      error("Expected sex to be either \"F\" or \"M\" but the value was: $sex")
     end
     # Identical model using ternary operator
     # COVSEXCL =
-    #   SEX == "Female" ? 1 + θSEXCLF :
+    #   sex == "F" ? 1 + θSEXCLF :
     #   (
-    #     SEX == "Male" ? 1 :
+    #     sex == "M" ? 1 :
     #     error(
-    #       "Expected SEX to be either \"Female\" or \"Male\" but the value was: $SEX",
+    #       "Expected sex to be either \"F\" or \"M\" but the value was: $sex",
     #     )
     #   )
 
@@ -242,7 +198,7 @@ mod_code_sex = @model begin
     """
     Warfarin Concentration (mg/L)
     """
-    pkconc ~ @.Normal(ipre, sqrt((ipre * σpro)^2))
+    conc ~ @. Normal(ipre, abs(ipre) * σpro)
   end
 end
 
@@ -272,17 +228,17 @@ mod_code_wt = @model begin
     # Residual unexplained variability
     σpro ∈ RealDomain(; lower=0.0)
   end
-  @covariates WEIGHT AGE SEX
+  @covariates wtbl age sex
   @random begin
     # Sampling random effect parameters
     η ~ MvNormal(Ω)
   end
   @pre begin
     # Effect of body weight on CL
-    COVWTCL = (WEIGHT / 70)^θWTCL
+    COVWTCL = (wtbl / 70)^θWTCL
 
     # Effect of body weight on VC
-    COVWTVC = (WEIGHT / 70)^θWTVC
+    COVWTVC = (wtbl / 70)^θWTVC
 
     # Individual PK parameters
     CL = θCL * exp(η[1]) * COVWTCL
@@ -311,7 +267,7 @@ mod_code_wt = @model begin
     """
     Warfarin Concentration (mg/L)
     """
-    pkconc ~ @.Normal(ipre, sqrt((ipre * σpro)^2))
+    conc ~ @. Normal(ipre, abs(ipre) * σpro)
   end
 end
 
@@ -343,29 +299,29 @@ mod_code_sexwt = @model begin
     # Residual unexplained variability
     σpro ∈ RealDomain(; lower=0.0)
   end
-  @covariates WEIGHT AGE SEX
+  @covariates wtbl age sex
   @random begin
     # Sampling random effect parameters
     η ~ MvNormal(Ω)
   end
   @pre begin
     # Effect of female sex on CL
-    COVSEXCL = if SEX == "Female"
-      # For SEX == "Female", estimate the effect
+    COVSEXCL = if sex == "F"
+      # For sex == "F", estimate the effect
       1 + θSEXCLF
-    elseif SEX == "Male"
-      # For SEX == "Male", set to the reference value
+    elseif sex == "M"
+      # For sex == "M", set to the reference value
       1
     else
       # Return error message if specified conditions are not met
-      error("Expected SEX to be either \"Female\" or \"Male\" but the value was: $SEX")
+      error("Expected sex to be either \"F\" or \"M\" but the value was: $sex")
     end
 
     # Effect of body weight on CL
-    COVWTCL = (WEIGHT / 70)^θWTCL
+    COVWTCL = (wtbl / 70)^θWTCL
 
     # Effect of body weight on VC
-    COVWTVC = (WEIGHT / 70)^θWTVC
+    COVWTVC = (wtbl / 70)^θWTVC
 
     # Individual PK parameters
     CL = θCL * exp(η[1]) * COVWTCL * COVSEXCL
@@ -394,7 +350,7 @@ mod_code_sexwt = @model begin
     """
     Warfarin Concentration (mg/L)
     """
-    pkconc ~ @.Normal(ipre, sqrt((ipre * σpro)^2))
+    conc ~ @. Normal(ipre, abs(ipre) * σpro)
   end
 end
 init_params_sexwt = (;
@@ -503,19 +459,19 @@ lrt.Δdf == 1 # the models differ for one population parameter
 lrt_pvalue = pvalue(lrt)
 
 ## Check the pvalue is what we expected
-lrt_pvalue ≈ 1 - cdf(Chisq(1), lrt.statistic)
+lrt_pvalue ≈ ccdf(Chisq(1), lrt.statistic)
 
 ## Check whether we can reject the null hypothesis
 alpha = 0.05
-lrt_pvalue < alpha # unfortunately not! SEX does not appear to be a useful covariate
+lrt_pvalue < alpha # unfortunately not! sex does not appear to be a useful covariate
 
-## Same for WEIGHT vs no covariates
+## Same for wtbl vs no covariates
 lrt = lrtest(mod_fit, mod_fit_wt)
 
-## Same for SEX/WEIGHT vs no covariates
+## Same for sex/wtbl vs no covariates
 lrt = lrtest(mod_fit, mod_fit_sexwt)
 
-## Same for SEX/WEIGHT vs WEIGHT
+## Same for sex/wtbl vs wtbl
 lrt = lrtest(mod_fit_wt, mod_fit_sexwt)
 
 ## Same for SEX vs WEIGHT?
@@ -540,32 +496,32 @@ mod_code_sexwtage = @model begin
     # Residual unexplained variability
     σpro ∈ RealDomain(; lower=0.0)
   end
-  @covariates WEIGHT AGE SEX
+  @covariates wtbl age sex
   @random begin
     # Sampling random effect parameters
     η ~ MvNormal(Ω)
   end
   @pre begin
     # Effect of female sex on CL
-    COVSEXCL = if SEX == "Female"
-      # For SEX == "Female", estimate the effect
+    COVSEXCL = if sex == "F"
+      # For sex == "F", estimate the effect
       1 + θSEXCLF
-    elseif SEX == "Male"
-      # For SEX == "Male", set to the reference value
+    elseif sex == "M"
+      # For sex == "M", set to the reference value
       1
     else
       # Return error message if specified conditions are not met
-      error("Expected SEX to be either \"Female\" or \"Male\" but the value was: $SEX")
+      error("Expected sex to be either \"F\" or \"M\" but the value was: $sex")
     end
 
     # Effect of body weight on CL
-    COVWTCL = (WEIGHT / 70)^θWTCL
+    COVWTCL = (wtbl / 70)^θWTCL
 
     # Effect of body weight on VC
-    COVWTVC = (WEIGHT / 70)^θWTVC
+    COVWTVC = (wtbl / 70)^θWTVC
 
     # Effect of age on KA
-    COVAGEKA = exp(θAGEKA * AGE / 100)
+    COVAGEKA = exp(θAGEKA * age / 100)
 
     # Individual PK parameters
     CL = θCL * exp(η[1]) * COVWTCL * COVSEXCL
@@ -594,7 +550,7 @@ mod_code_sexwtage = @model begin
     """
     Warfarin Concentration (mg/L)
     """
-    pkconc ~ @.Normal(ipre, sqrt((ipre * σpro)^2))
+    conc ~ @.Normal(ipre, abs(ipre) * σpro)
   end
 end
 init_params_sexwtage = (;
