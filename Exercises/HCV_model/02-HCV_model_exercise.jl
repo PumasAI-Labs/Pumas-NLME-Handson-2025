@@ -4,7 +4,7 @@
 # https://pmc.ncbi.nlm.nih.gov/articles/PMC4294071/
 # ==============================================================
 
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging
+using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
 
 
 # Model set up
@@ -15,7 +15,7 @@ model_hcv = @model begin
       # fixed effects 
       logθKa ∈ RealDomain()
 
-      # random effects variance parameters, must be posisitive
+      # random effects variance parameters, must be positive
       ω²Ka ∈ RealDomain(lower = 0.0)
 
       # variance parameter in error models
