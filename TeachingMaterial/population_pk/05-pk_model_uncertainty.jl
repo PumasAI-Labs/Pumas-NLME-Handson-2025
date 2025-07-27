@@ -77,6 +77,29 @@ warfarin_pkmodel_sir_results = DataFrame(warfarin_pkmodel_sir.vcov)
 coeftable(warfarin_pkmodel_sir; level = 0.95)
 
 # -----------------------------------------------------------------------------
+# 3. MARGINAL MCMC SAMPLER (MarginalMCMC)
+# -----------------------------------------------------------------------------
+# Marginal MCMC sampler:
+# - samples population parameters from the marginal likelihood of the model
+#   (same target distribution as SIR)
+# - `MarginalMCMC` uses a Hamiltonian Monte Carlo (HMC) based No-U-Turn sampler (NUTS)
+# - `MarginalMCMC` accepts the number of samples (`nsamples`) to generate (default: 2000) per chain,
+#   including the number of discarded adaptation samples `nadapts` (default: `nsamples ÷ 2`),
+#    and the number of chains (`nchains`) (default: 4)
+# - `MarginalMCMC` uses the likelihood-approximation algorithm of the fitted Pumas model by default;
+#   it can be changed by setting `marginal_alg` to e.g. `FO()`, `FOCE()`, or `LaplaceI()`
+# - For additional options, see `? MarginalMCMC`
+# Perform inference with `MarginalMCMC`
+warfarin_pkmodel_marginalmcmc = infer(warfarin_pkmodel_fit, MarginalMCMC(; nsamples = 100, nadapts = 50, nchains = 4))
+
+# Obtain raw results from MarginalMCMC
+warfarin_pkmodel_marginalmcmc_results = DataFrame(warfarin_pkmodel_marginalmcmc.vcov)
+
+# Return a DataFrame of parameter estimates and precision from `MarginalMCMC`
+# Provide 95% confidence intervals
+coeftable(warfarin_pkmodel_marginalmcmc; level = 0.95)
+
+# -----------------------------------------------------------------------------
 # TIPS AND BEST PRACTICES
 # -----------------------------------------------------------------------------
 # 1. Parameter uncertainty can be estimated through multiple methods
