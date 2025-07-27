@@ -51,8 +51,8 @@ sim_150 = simobs(
 )
 
 # Plot:
-sim_plot(fig[1, 1], warfarin_model, sim_50; observations = [:conc])
-sim_plot(fig[1, 2], warfarin_model, sim_150; observations = [:conc])
+sim_plot(warfarin_model, sim_50; observations = [:conc])
+sim_plot(warfarin_model, sim_150; observations = [:conc])
 
 sim_plot(warfarin_model, sim_50; observations = [:pca])
 sim_plot(warfarin_model, sim_150; observations = [:pca])
