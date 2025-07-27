@@ -3,7 +3,7 @@
 # =============================================================================
 
 # Import the previous code that returns the fitted Pumas model
-include(joinpath(@__DIR__, "..","01-TeachingMaterial","02-population_pkpd","03-pkpd_model_fitting.jl") ) # to get warfarin_model and warfarin_model_fit    
+include(joinpath(@__DIR__, "..","TeachingMaterial","population_pkpd","03-pkpd_model_fitting.jl")) # to get warfarin_model and warfarin_model_fit    
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES 
@@ -51,11 +51,11 @@ sim_150 = simobs(
 )
 
 # Plot:
-sim_plot(warfarin_model, sim_50; observations = [:conc], axis = (; limits = (nothing, (0, 30))))
-sim_plot(warfarin_model, sim_150; observations = [:conc], axis = (; limits = (nothing, (0, 30))))
+sim_plot(warfarin_model, sim_50; observations = [:conc])
+sim_plot(warfarin_model, sim_150; observations = [:conc])
 
-sim_plot(warfarin_model, sim_50; observations = [:pca], axis = (; limits = (nothing, (0, 150))))
-sim_plot(warfarin_model, sim_150; observations = [:pca], axis = (; limits = (nothing, (0, 150))))
+sim_plot(warfarin_model, sim_50; observations = [:pca])
+sim_plot(warfarin_model, sim_150; observations = [:pca])
 
 
 # -----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ Using the warfarin PK-PD model:
 2. Explore the effect on PK and PCA
 """
 
-# Create DosagRegimen object for daily doses of 50 for a week:
+# Create DosagRegimen objects for daily doses of 50 and 150 for a week:
 dose_50qd = DosageRegimen(50; time = 0, ii = 24 , addl = 6)
 dose_150qd = DosageRegimen(150; time = 0, ii = 24 , addl = 6)
 # Create a population for each new dosing regimen:
@@ -91,11 +91,11 @@ sim_150qd = simobs(
     obstimes = 0.0:1:150.0,  # Fine time grid
 )
 # Plot:
-sim_plot(warfarin_model, sim_50qd; observations = [:conc], axis = (; limits = (nothing, (0, 80))))
-sim_plot(warfarin_model, sim_150qd; observations = [:conc], axis = (; limits = (nothing, (0, 80))))
+sim_plot(warfarin_model, sim_50qd; observations = [:conc])
+sim_plot(warfarin_model, sim_150qd; observations = [:conc])
 
-sim_plot(warfarin_model, sim_50qd; observations = [:pca], axis = (; limits = (nothing, (0, 80))))
-sim_plot(warfarin_model, sim_150qd; observations = [:pca], axis = (; limits = (nothing, (0, 80))))
+sim_plot(warfarin_model, sim_50qd; observations = [:pca])
+sim_plot(warfarin_model, sim_150qd; observations = [:pca])
 
 
 # -----------------------------------------------------------------------------
@@ -128,7 +128,3 @@ new_sim = simobs(
 # Plot:
 sim_plot(warfarin_model, new_sim; observations = [:conc])
 sim_plot(warfarin_model, new_sim; observations = [:pca])
-
-
-
-

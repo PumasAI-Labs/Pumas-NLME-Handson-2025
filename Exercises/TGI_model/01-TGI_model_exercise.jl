@@ -4,7 +4,7 @@
 # https://pubmed.ncbi.nlm.nih.gov/19636014/
 # ==============================================================
 
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging
+using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
 
 # Reproduce the model for FU Phase III
 

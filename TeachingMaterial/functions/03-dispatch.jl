@@ -6,6 +6,8 @@
 # It allows functions to have different implementations based on the types
 # of ALL their arguments, not just the first one (unlike traditional OOP).
 # This enables both elegant code organization and high performance.
+#
+# Stefan Karpinski's talk on multiple dispatch: https://www.youtube.com/watch?v=kc9HwsxE1OY
 
 include("02-advanced.jl")
 

@@ -5,10 +5,7 @@
 # The simobs function is used to simulate from Pumas models
 
 # Import the previous code that returns the fitted Pumas model
-include(joinpath("..",
-    "population_pk",
-    "03-pk_model_fitting.jl"
-)) 
+include(joinpath(@__DIR__, "..", "population_pk", "03-pk_model_fitting.jl"))
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES FOR SIMULATIONS
@@ -79,8 +76,8 @@ subject_fits(preds; separate = true, paginate = true)[1]
 # sample_randeffs function
 warfarin_pkmodel_etas = sample_randeffs(
     warfarin_pkmodel,                  # the model
+    pop_pk,                            # the population
     coef(warfarin_pkmodel_fit),        # the parameters
-    pop_pk                             # the population
 )
 
 # We can pass these values to simobs instead of the EBEs
@@ -156,7 +153,7 @@ warfarin_pkmodel_smooth = simobs(
     coef(warfarin_pkmodel_fit),      # final parameters from the fit
     warfarin_pkmodel_etas;           # extract the EBEs
     simulate_error = false,          # Disable random draws in the error model
-    obstimes = [0.0:0.1:150.0;],       # Custom time points for simulation
+    obstimes = 0.0:0.1:150.0,        # Custom time points for simulation
 )
 
 # Plot individual predicted and observed concentrations
@@ -208,33 +205,37 @@ visual(Lines, color = (:black, 0.025)) |> draw
 #   1. drop rows which have missing values of conc
 #   2. grouping by :id and :time
 #   3. combining the grouped DataFrames by using median and quantile to get the CIs
-df = @rsubset warfarin_pkmodel_vpcsim parse(Int, :id) ≤ 9 # Select the first 9 subject
-df = combine(
-    groupby(
-        dropmissing(df, :conc),
-        [:id, :time]
-    ),
-    :conc => median => :median,
-    :conc => (x -> quantile(x, 0.1)) => :lb,
-    :conc => (x -> quantile(x, 0.9)) => :ub,
-)
+df = @chain warfarin_pkmodel_vpcsim begin
+    # Select the first 9 subject
+    @rsubset parse(Int, :id) ≤ 9
+    # Drop rows which have missing values of conc 
+    dropmissing(_, :conc)
+    # Combine the grouped DataFrames by using median and quantile to get the CIs
+    @by [:id, :time] begin
+        :median = median(:conc)
+        :lb = quantile(:conc, 0.1)
+        :ub = quantile(:conc, 0.9)
+    end
+end
 data(df) *
 mapping(:time, :median, lower = :lb, upper = :ub, layout = :id) *
 visual(LinesFill, label = "80% CI") |> draw
 
 ## Plotting multiple CIs
-df = @rsubset warfarin_pkmodel_vpcsim parse(Int, :id) ≤ 9 # Select the first 9 subject
-df = combine(
-    groupby(
-        dropmissing(df, :conc),
-        [:id, :time]
-    ),
-    :conc => median => :median,
-    :conc => (x -> quantile(x, 0.25)) => :lb50,
-    :conc => (x -> quantile(x, 0.75)) => :ub50,
-    :conc => (x -> quantile(x, 0.025)) => :lb95,
-    :conc => (x -> quantile(x, 0.975)) => :ub95,
-)
+df = @chain warfarin_pkmodel_vpcsim begin
+    # Select the first 9 subject
+    @rsubset parse(Int, :id) ≤ 9
+    # Drop rows which have missing values of conc 
+    dropmissing(_, :conc)
+    # Combine the grouped DataFrames by using median and quantile to get the CIs
+    @by [:id, :time] begin
+        :median = median(:conc)
+        :lb50 = quantile(:conc, 0.25)
+        :ub50 = quantile(:conc, 0.75)
+        :lb95 = quantile(:conc, 0.025)
+        :ub95 = quantile(:conc, 0.975)
+    end
+end
 data(df) * (
     mapping(:time, :median, lower = :lb95, upper = :ub95, layout = :id) *
     visual(LinesFill, color = :darkblue, fillalpha = 0.15, linewidth = 0, label = "95% CI") +

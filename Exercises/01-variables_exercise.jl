@@ -4,11 +4,11 @@ using Test
 Exercise 1: Variable Declaration and Types
 ----------------------------------------
 Declare variables for the following pharmacometric parameters:
-1. Create a variable 'dose' with value 100 (mg)
-2. Create a variable 'volume_of_distribution' with value 48.2 (L)
-3. Create a variable 'half_life' with value 12.5 (hours)
-4. Create a variable 'is_fasted' as a boolean indicating fasting state
-5. Create a variable 'patient_id' as a string "SUBJ-001"
+1. Create a variable `dose` with value 100 (mg)
+2. Create a variable `volume_of_distribution` with value 48.2 (L)
+3. Create a variable `half_life` with value 12.5 (hours)
+4. Create a variable `is_fasted` as a boolean indicating fasting state
+5. Create a variable `patient_id` as a string "SUBJ-001"
 
 Use the most appropriate type for each variable!
 """
@@ -20,8 +20,8 @@ Use the most appropriate type for each variable!
 Exercise 2: Basic Calculations
 ----------------------------
 Using the variables you created above:
-1. Calculate the elimination rate constant (k) using the formula: k = ln(2)/half_life
-2. Calculate the initial concentration (C0) using: C0 = dose/volume_of_distribution
+1. Calculate the elimination rate constant (k) using the formula: `k` = ln(2)/`half_life`
+2. Calculate the initial concentration (C0) using: `C0` = `dose`/`volume_of_distribution`
 3. Store both results in new variables
 """
 

@@ -17,7 +17,7 @@ two_cmt_model = @model begin
         
         # Random effects
         "Variance-covariance matrix for CL and V1"
-        Ω_clv1 ∈ PDiagDomain([0.04, 0.04], init=[0.04 0.02; 0.02 0.04])
+        Ω_clv1 ∈ PDiagDomain(2; init=[0.04, 0.04])
         "Variance for Q"
         ω_q ∈ RealDomain(lower=0.0, init=0.04)
         "Variance for V2"

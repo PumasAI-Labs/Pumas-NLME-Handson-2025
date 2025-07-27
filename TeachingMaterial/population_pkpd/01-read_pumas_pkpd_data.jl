@@ -20,8 +20,7 @@ Required data elements for Pumas Population:
 
 # Import the previous data wrangling example for demonstration
 # This gives us the df_wide DataFrame
-include(joinpath("..", "..", "..", "Day1", "01-TeachingMaterial",
-    "05-data_read_wrangle", "03-data_wrangling.jl"))
+include(joinpath(@__DIR__, "..", "data_read_wrangle", "03-data_wrangling.jl"))
 
 # Display the dataset:
 vscodedisplay(df_wide)

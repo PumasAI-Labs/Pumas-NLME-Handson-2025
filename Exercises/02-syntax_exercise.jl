@@ -4,7 +4,7 @@ using Test
 Exercise 1: Conditional Statements
 --------------------------------
 Write conditional statements to:
-1. Check if a drug concentration (conc = 15.5 μg/mL) is within therapeutic range (10-20 μg/mL)
+1. Check if a drug concentration (`conc` = 15.5 μg/mL) is within therapeutic range (10-20 μg/mL)
 2. Wriate a function that classifies the drug exposure as:
    - "Low" if < 10 μg/mL
    - "Therapeutic" if between 10-20 μg/mL
@@ -18,9 +18,9 @@ Write conditional statements to:
 Exercise 2: Loops
 ----------------
 1. Create an array of hourly time points from 0 to 24 hours
-2. Calculate drug concentrations at each time point using the formula:
-   C(t) = C0 * exp(-k * t)
-   where C0 = 100 μg/mL and k = 0.1 /hour
+2. Calculate drug concentrations at each time point in a loop using the formula:
+   C(t) = `C0` * exp(-`k` * t)
+   where `C0` = 100 μg/mL and `k` = 0.1 /hour
 3. Store results in a new array
 """
 

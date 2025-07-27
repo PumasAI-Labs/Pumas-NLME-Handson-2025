@@ -15,21 +15,29 @@ end
 
 # Test Exercise 1
 @test calculate_clearance(50.0, 0.1) == 5.0
-@test isapprox(calculate_half_life(0.1), 6.93, atol=0.01)
+@test calculate_half_life(0.1) ≈ 6.93 atol=0.01
 @test calculate_auc(100.0, 5.0) == 20.0
 
 # Exercise 2: Multiple Dispatch
-function calculate_dose(weight::Float64, dose_per_kg::Float64)::Float64
+function calculate_dose(weight::Real, dose_per_kg::Real)
     return weight * dose_per_kg
 end
+function calculate_dose(weights::Vector{<:Real}, dose_per_kg::Real)
+    return calculate_dose.(weights, dose_per_kg)
+end
 
-function calculate_dose(bsa::Float64, dose_per_m2::Float64)::Float64
-    return bsa * dose_per_m2
+function calculate_dose_alt(weights::Union{Real, Vector{<:Real}}, dose_per_kg::Real)
+    return weights * dose_per_kg
 end
 
 # Test Exercise 2
-@test calculate_dose(70.0, 2.0) == 140.0  # weight-based
-@test calculate_dose(1.73, 100.0) == 173.0  # BSA-based
+@test length(methods(calculate_dose)) == 2 # two methods for both cases
+@test calculate_dose(70.0, 2.0) == 140.0  # single subject
+@test calculate_dose([65.3, 92.1], 2.0) == [130.6, 184.2]  # multiple subjects
+
+@test length(methods(calculate_dose_alt)) == 1 # single method handles both cases
+@test calculate_dose_alt(70.0, 2.0) == 140.0  # single subject
+@test calculate_dose_alt([65.3, 92.1], 2.0) == [130.6, 184.2]  # multiple subjects
 
 # Exercise 3: Anonymous Functions
 C0 = 100.0

@@ -40,9 +40,8 @@ fig_gof_conc = goodness_of_fit(warfarin_model_pred,
     observations = [:conc],
     markercolor = :grey,
     markersize = 6,
-    include_legend = true,
-    figurelegend = (
-        position = :b,
+    legend = (
+        position = :bottom,
         framevisible = false,
         orientation = :vertical, 
         tellheight = true,
@@ -56,9 +55,8 @@ fig_gof_pca= goodness_of_fit(warfarin_model_pred,
     observations = [:pca],
     markercolor = :grey,
     markersize = 6,
-    include_legend = true,
-    figurelegend = (
-        position = :b,
+    legend = (
+        position = :bottom,
         framevisible = false,
         orientation = :vertical, 
         tellheight = true,
@@ -109,44 +107,38 @@ npde_vs_predictions(warfarin_model_pred)
 # predictions
 fig_id_conc = subject_fits(warfarin_model_pred,
     separate = true,
-    ids = unique(warfarin_model_preddf.id),
     observations = [:conc],
-    include_legend = true,
-    figurelegend = (
-        position = :b,
+    legend = (
+        position = :bottom,
         framevisible = false,
         orientation = :vertical, 
         tellheight = true,
         tellwidth = false,
         nbanks = 4
     ),
-    facet = (combinelabels = true,),
     paginate = true # this will generate a vector of plots
                     # to avoid that each plot gets too small
 )
 # We can render all plots in one go by calling display on the vector
-display.(fig_id_conc)
+foreach(display, fig_id_conc)
 
 
 fig_id_pca = subject_fits(warfarin_model_pred,
     separate = true,
-    ids = unique(warfarin_model_preddf.id),
     observations = [:pca],
-    include_legend = true,
-    figurelegend = (
-        position = :b,
+    legend = (
+        position = :bottom,
         framevisible = false,
         orientation = :vertical, 
         tellheight = true,
         tellwidth = false,
         nbanks = 4
     ),
-    facet = (combinelabels = true,),
     paginate = true # this will generate a vector of plots
                     # to avoid that each plot gets too small
 )
 # We can render all plots in one go by calling display on the vector
-display.(fig_id_pca)
+foreach(display, fig_id_pca)
 
 
 # -----------------------------------------------------------------------------
@@ -159,7 +151,7 @@ fig_ebe_hist = empirical_bayes_dist(
 
 # Plot EBEs versus covariates
 empirical_bayes_vs_covariates(
-    warfarin_model_pred,  
+    warfarin_model_pred,
 )
 
 
@@ -173,7 +165,7 @@ wresiduals_dist(
 
 # Plot histograms of NPDEs from the model output
 npde_dist(
-    warfarin_model_pred, 
+    warfarin_model_pred,
 )
 
 
@@ -182,20 +174,20 @@ npde_dist(
 # -----------------------------------------------------------------------------
 # Custom plots can be generated using the DataFrame output of inspect and
 # using AlgebraOfGraphics.jl/CairoMakie.jl packages
-p_npde_scatter = data(warfarin_pkmodel_preddf)*
+p_npde_scatter = data(warfarin_model_preddf)*
     mapping(:time,:conc_npde)*  # to define the aesthetic mapping of variables to the plot axes
     visual(Scatter)  # to specify the type of plot
 draw(p_npde_scatter)  # to render and display the plot
 
 # A linear regression line can be added
-p_npde_linear = data(dropmissing(warfarin_pkmodel_preddf,:conc))*
+p_npde_linear = data(dropmissing(warfarin_model_preddf,:conc))*
     mapping(:time,:conc_npde)*
     AlgebraOfGraphics.linear()*  # to add a linear regression trend line to the plot
     visual(;label = "Linear Regression")  # to ensure that the regression line has an appropriate legend entry
 draw(p_npde_scatter + p_npde_linear)  # to combine both plots
 
 # And a LOESS smooth line can be added
-p_npde_loess = data(dropmissing(warfarin_pkmodel_preddf,:conc))*
+p_npde_loess = data(dropmissing(warfarin_model_preddf,:conc))*
     mapping(:time,:conc_npde)*
     AlgebraOfGraphics.smooth()*  #  to add a LOESS smooth line to the plot
     visual(;color = :red, label = "LOESS")

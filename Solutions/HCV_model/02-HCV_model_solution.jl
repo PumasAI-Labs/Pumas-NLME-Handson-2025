@@ -4,7 +4,7 @@
 # https://pmc.ncbi.nlm.nih.gov/articles/PMC4294071/
 # ==============================================================
 
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging
+using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
 
 
 # Model set up
@@ -103,7 +103,7 @@ init = (
     logθδ = log(0.20),
     logθc = log(7.0),
     logθEC50 = log(0.12),
-    # random effects variance parameters, must be posisitive
+    # random effects variance parameters, must be positive
     ω²Ka = 0.25,
     ω²Ke = 0.25,
     ω²Vd = 0.25,

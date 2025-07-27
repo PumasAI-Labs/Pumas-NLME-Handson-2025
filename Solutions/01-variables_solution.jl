@@ -19,8 +19,8 @@ k = log(2)/half_life
 C0 = dose/volume_of_distribution
 
 # Test Exercise 2
-@test isapprox(k, 0.0554, atol=0.001)
-@test isapprox(C0, 2.0747, atol=0.001)
+@test k ≈ 0.0554 atol=0.001
+@test C0 ≈ 2.0747 atol=0.001
 
 # Exercise 3: String Manipulation
 patient_info = "Patient $patient_id received $dose mg"
@@ -47,4 +47,4 @@ patient_params["clearance"] = volume_of_distribution * k
 # Test Bonus Challenge
 @test dose_in_grams == 0.1
 @test haskey(patient_params, "clearance")
-@test isapprox(patient_params["clearance"], 2.67, atol=0.01) 
+@test patient_params["clearance"] ≈ 2.67 atol=0.01

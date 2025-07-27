@@ -3,11 +3,11 @@ using Test
 @info """
 Exercise 1: Basic Function Definition
 ----------------------------------
-1. Create a function calculate_clearance that takes volume (L) and elimination_rate (/hr) as arguments
+1. Create a function `calculate_clearance` that takes `volume` (L) and `elimination_rate` (/hr) as arguments
    and returns clearance (L/hr)
-2. Create a function calculate_half_life that takes elimination_rate (/hr) as argument
+2. Create a function `calculate_half_life` that takes `elimination_rate` (/hr) as argument
    and returns the half-life (hr)
-3. Create a function calculate_auc that takes dose (mg) and clearance (L/hr) as arguments
+3. Create a function `calculate_auc` that takes `dose` (mg) and `clearance` (L/hr) as arguments
    and returns the AUC (mg*hr/L)
 """
 
@@ -17,11 +17,16 @@ Exercise 1: Basic Function Definition
 @info """
 Exercise 2: Multiple Dispatch
 ---------------------------
-1. Create a function calculate_dose that works with different units:
-   - One method that takes weight (kg) and dose_per_kg (mg/kg)
-   - Another method that takes BSA (m²) and dose_per_m2 (mg/m²)
-   Both should return the total dose in mg
-2. Add type annotations to make the function more robust
+1. Create a function `calculate_dose` that works with both
+   weight of a single subject and weights of a population of multiple subjects:
+   - One method that takes `weight` (kg) of a single subject and `dose_per_kg` (mg/kg),
+     and returns the total dose of that subject in mg.
+   - Another method that takes a vector of `weights` (kg) of multiple subjects and
+     `dose_per_kg` (mg/kg), and returns a vector of total doses in mg for each subject.
+   Reuse the method for a single subject in the method for multiple subjects.
+2. In this case, it is actually not necessary to define two different methods.
+   Define a single method `calculate_dose_alt` that works for both cases,
+   without using `if`/`else` statements on the input type.
 """
 
 # Your code here
@@ -43,7 +48,7 @@ Exercise 3: Anonymous Functions
 @info """
 Bonus Challenge: Higher Order Functions
 -----------------------------------
-1. Create a higher-order function simulate_pk that takes:
+1. Create a higher-order function `simulate_pk` that takes:
    - A dosing function (that calculates concentration vs time)
    - Time points array
    - PK parameters dictionary
