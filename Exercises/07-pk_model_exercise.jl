@@ -3,7 +3,7 @@
 # =============================================================================
 
 # Import the previous code that returns the fitted Pumas model
-include(joinpath("..","01-TeachingMaterial","06-population_pk","03-pk_model_fitting.jl"))  # This gives us the fitted base model, warfarin_pkmodel_fit
+include(joinpath(@__DIR__, "..","TeachingMaterial","population_pk","03-pk_model_fitting.jl"))  # This gives us the fitted base model, warfarin_pkmodel_fit
 
 # -----------------------------------------------------------------------------
 # 1. Exercise 1: Initial Parameter Exploration
