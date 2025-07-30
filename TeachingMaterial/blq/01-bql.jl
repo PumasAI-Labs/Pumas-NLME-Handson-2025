@@ -439,6 +439,146 @@ warfarin_pkmodel_fit_m5 = fit(
 )
 
 #----------------------------------------------------------------------------------
+# M6: Impute consecutive BLQ data (set first to LLOQ/2, discard others)
+#----------------------------------------------------------------------------------
+
+# Impute first of consecutive BLQ data with LLOQ/2, discard following ones
+df_m6 = @chain df begin
+    @groupby :ID :EVID
+    @transform! :conc = ifelse.(:EVID .== 0 .&& :BLQ, ifelse.(:BLQ .!= vcat(false, :BLQ[begin:(end - 1)]), lloq / 2, missing), :conc)
+end
+
+# Fit the model
+warfarin_pkmodel_fit_m6 = fit(
+    warfarin_pkmodel, # Use the unmodified warfarin model
+    create_pk_population(df_m6),
+    init_params(warfarin_pkmodel),
+    FOCE(),
+)
+
+#----------------------------------------------------------------------------------
+# M6+: Impute consecutive BLQ data (set first to LLOQ/2, discard others) and
+#      increase additive error for BLQ data
+#----------------------------------------------------------------------------------
+
+# Impute first of consecutive BLQ data with LLOQ/2, discard following ones
+df_m6p = @chain df begin
+    @groupby :ID :EVID
+    @transform! :conc = ifelse.(:EVID .== 0 .&& :BLQ, ifelse.(:BLQ .!= vcat(false, :BLQ[begin:(end - 1)]), lloq / 2, missing), :conc)
+end
+
+# Include BLQ as covariate
+pop_m6p = read_pumas(
+    df_m7p;
+    # Subject identification
+    id = :ID,           # Column containing subject IDs
+
+    # Time information
+    time = :TIME,       # Column containing time points
+
+    # Dosing information
+    amt = :AMOUNT,      # Dosing amounts
+    cmt = :CMT,         # Compartment numbers
+    evid = :EVID,       # Event type identifiers
+
+    # Subject characteristics (covariates)
+    covariates = [
+        :SEX,           # Gender (0 = female, 1 = male)
+        :WEIGHT,        # Body weight in kg
+        :FSZV,          # Volume scaling factor
+        :FSZCL,         # Clearance scaling factor
+        :BLQ,           # BLQ indicator (boolean)
+    ],
+
+    # Measured responses (observations)
+    observations = [
+        :conc,          # Drug concentration
+    ],
+)
+
+warfarin_pkmodel_m6p = @model begin
+    # The @param block defines all model parameters and their properties
+    @param begin
+        # Population PK Parameters
+        "Clearance (L/h/70 kg)"
+        θCL ∈ RealDomain(lower = 0.0, init = 0.134)
+        "Central Volume of Distribution (L/70 kg)"
+        θVC ∈ RealDomain(lower = 0.0, init = 8.11)
+        "Absorption Half-Life (hr)"
+        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        "Absorption Lag Time (hr)"
+        θlag ∈ RealDomain(lower = 0.0, init = 0.1)
+
+        # Inter-Individual Variability
+        "Variance-Covariance for IIV in PK Parameters"
+        pk_Ω ∈ PDiagDomain([0.09, 0.09])
+        "Variance for IIV in Absorption Half-Life"
+        tabs_ω ∈ RealDomain(lower = 0.0, init = 0.09)
+
+        # Random Unexplained Variability
+        "Proportional Error for Concentrations"
+        σ_prop ∈ RealDomain(lower = 0.0, init = 0.00752)
+        "Additive Error for Concentrations (mg/L)"
+        σ_add ∈ RealDomain(lower = 0.0, init = 0.0661)
+    end
+
+    # The @random block defines the distribution of individual random effects
+    @random begin
+        pk_η ~ MvNormal(pk_Ω) # Sample from multivariate normal distribution
+        tabs_η ~ Normal(0.0, sqrt(tabs_ω)) # Sample from normal distribution
+    end
+
+    # Declare which covariates from the data will be used in the model
+    @covariates FSZV FSZCL BLQ
+
+    # Calculate individual parameters using population parameters, random effects,
+    # and covariates
+    @pre begin
+        # Individual PK Parameters
+        CL = θCL * FSZCL * exp(pk_η[1])
+        Vc = θVC * FSZV * exp(pk_η[2])
+        tabs = θtabs * exp(tabs_η)
+        Ka = log(2) / tabs # Convert half-life to first-order rate constant
+
+        # Increase RUV for BLQ data
+        σ_add_blq = BLQ ? σ_add + lloq / 2 : σ_add
+    end
+
+    # Define dosing-related parameters (bioavailability [bioav], absorption rate [rate],
+    # absorption duration [duration], absorption lag [lags])
+    @dosecontrol begin
+        lags = (Depot = θlag,)
+    end
+
+    # Define derived variables used in dynamics and observations
+    @vars begin
+        # Concentration in central compartment
+        cp := Central / Vc
+    end
+
+    # Define the differential equations for the model
+    # Options available for using analytical solutions instead
+    @dynamics begin
+        Depot' = -Ka * Depot              # Rate of change in depot compartment
+        Central' = Ka * Depot - CL * cp    # Rate of change in central compartment
+    end
+
+    # Define how the model predictions relate to observed data
+    @derived begin
+        "Warfarin Concentration (mg/L)"
+        conc ~ @. Normal(cp, sqrt((σ_prop * cp)^2 + σ_add_blq^2))  # Combined error model
+    end
+end
+
+# Fit the model
+warfarin_pkmodel_fit_m6p = fit(
+    warfarin_pkmodel_m6p,
+    pop_m6p,
+    init_params(warfarin_pkmodel),
+    FOCE(),
+)
+
+#----------------------------------------------------------------------------------
 # M7: Impute BLQ data with 0
 #----------------------------------------------------------------------------------
 
