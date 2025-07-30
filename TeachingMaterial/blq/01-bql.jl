@@ -196,7 +196,7 @@ data(
     :x,
     group = :dist,
     color = :dist,
-) * AlgebraOfGraphics.density() |> draw(; axis = (; title = "Sampling comparison"))
+) * AlgebraOfGraphics.density(; datalimits = extrema) |> draw(; axis = (; title = "Sampling comparison"))
 
 # -------------------------------------------------------------------------------
 # M3: Model BLQ data with censored distribution
@@ -324,7 +324,7 @@ data(
     :x,
     group = :dist,
     color = :dist,
-) * AlgebraOfGraphics.density() |> draw(; axis = (; title = "Sampling comparison"))
+) * AlgebraOfGraphics.density(; datalimits = extrema) |> draw(; axis = (; title = "Sampling comparison"))
 
 # -----------------------------------------------------------------------------
 # M4: M3 with a truncated distribution
