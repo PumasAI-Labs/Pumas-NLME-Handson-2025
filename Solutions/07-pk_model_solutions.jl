@@ -22,15 +22,12 @@ Using the warfarin PK model:
 4. Document which changes lead to better/worse fits
 """
 
-# Initial paramters from the base model:
-initial_params = init_params(warfarin_pkmodel)
-
 # New fit with new initial values:
 fit_newinit = fit(
     warfarin_pkmodel,              # The model we defined
     pop_pk,                        # The population data
     (;                             # Starting values
-        initial_params...,
+        warfarin_pkmodel_initial_params...,
         θCL = 0.201, 
         #θVC = 16,
         #pk_Ω =  Diagonal([0.3, 0.3]),
@@ -65,31 +62,31 @@ warfarin_pkmodel_2cmt = @model begin
         # PK Parameters
         # ------------
         "Clearance (L/h/70 kg)"
-        θCL   ∈ RealDomain(lower = 0.0, init = 0.134)
+        θCL   ∈ RealDomain(lower = 0.0)
         "Central Volume of Distribution (L/70 kg)"
-        θVC   ∈ RealDomain(lower = 0.0, init = 8.11)
+        θVC   ∈ RealDomain(lower = 0.0)
         "Intercompartmental Clearance (L/h/70kg)"
-        θQ ∈ RealDomain(lower = 0.0, init = 0.1)  
+        θQ ∈ RealDomain(lower = 0.0)  
         "Peripheral Volume (L/70kg)"
-        θV2 ∈ RealDomain(lower = 0.0, init = 10)
+        θV2 ∈ RealDomain(lower = 0.0)
         "Absorption Half-Life (hr)"
-        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        θtabs ∈ RealDomain(lower = 0.0)
         "Absorption Lag Time (hr)"
-        θlag  ∈ RealDomain(lower = 0.0, init = 0.1)
+        θlag  ∈ RealDomain(lower = 0.0)
         
         # Inter-individual Variability (IIV)
         # --------------------------------
         "Variance-Covariance for IIV in PK Parameters"
-        pk_Ω     ∈ PDiagDomain([0.09, 0.09])
+        pk_Ω     ∈ PDiagDomain(2)
         "Variance for IIV in Absorption Half-Life"
-        tabs_ω   ∈ RealDomain(lower = 0.0, init = 0.09)
+        tabs_ω   ∈ RealDomain(lower = 0.0)
         
         # Residual Error Parameters
         # -----------------------
         "Proportional Error for Concentrations"
-        σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
+        σ_prop   ∈ RealDomain(lower = 0.0)
         "Additive Error for Concentrations (mg/L)"
-        σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
+        σ_add    ∈ RealDomain(lower = 0.0)
     end
 
     ##### Random Effects Block #####
@@ -147,10 +144,15 @@ end
 
 # Fit
 # --------------
+warfarin_pkmodel_2cmt_initial_params = merge(
+    warfarin_pkmodel_initial_params,
+    (; θQ = 0.1, θV2 = 10),
+)
+
 fit_2cmt = fit(
     warfarin_pkmodel_2cmt,              # The model we defined
     pop_pk,                        # The population data
-    init_params(warfarin_pkmodel_2cmt),
+    warfarin_pkmodel_2cmt_initial_params,
     FOCE()                       # Estimation method
 )
 
@@ -213,30 +215,30 @@ warfarin_pkmodel_corr = @model begin
     @param begin
         # Population PK Parameters
         "Clearance (L/h/70 kg)"
-        θCL   ∈ RealDomain(lower = 0.0, init = 0.134)
+        θCL   ∈ RealDomain(lower = 0.0)
         "Central Volume of Distribution (L/70 kg)"
-        θVC   ∈ RealDomain(lower = 0.0, init = 8.11)
+        θVC   ∈ RealDomain(lower = 0.0)
         "Absorption Half-Life (hr)"
-        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        θtabs ∈ RealDomain(lower = 0.0)
         "Absorption Lag Time (hr)"
-        θlag  ∈ RealDomain(lower = 0.0, init = 0.1)
+        θlag  ∈ RealDomain(lower = 0.0)
 
         # Inter-Individual Variability
         "PK variability matrix (CL, V)"
-        clv_Ω    ∈ PSDDomain([0.02 0.01; 0.01 0.02])  
+        pk_Ω    ∈ PSDDomain(2)
         "Variance for IIV in Absorption Half-Life"
-        tabs_ω   ∈ RealDomain(lower = 0.0, init = 0.09)
+        tabs_ω   ∈ RealDomain(lower = 0.0)
         
         # Random Unexplained Variability
         "Proportional Error for Concentrations"
-        σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
+        σ_prop   ∈ RealDomain(lower = 0.0)
         "Additive Error for Concentrations (mg/L)"
-        σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
+        σ_add    ∈ RealDomain(lower = 0.0)
     end
 
     # The @random block defines the distribution of individual random effects
     @random begin
-        clv_η ~ MvNormal(clv_Ω) # Sample from multivariate normal distribution
+        pk_η ~ MvNormal(pk_Ω) # Sample from multivariate normal distribution
         tabs_η ~ Normal(0.0, sqrt(tabs_ω)) # Sample from normal distribution
     end
 
@@ -247,8 +249,8 @@ warfarin_pkmodel_corr = @model begin
     # and covariates
     @pre begin
         # Individual PK Parameters
-        CL = θCL * FSZCL * exp(clv_η[1])
-        Vc = θVC * FSZV * exp(clv_η[2])
+        CL = θCL * FSZCL * exp(pk_η[1])
+        Vc = θVC * FSZV * exp(pk_η[2])
         tabs = θtabs * exp(tabs_η)
         Ka = log(2) / tabs # Convert half-life to first-order rate constant
     end
@@ -281,10 +283,15 @@ end
 
 # Fit
 # --------------
+warfarin_pkmodel_corr_initial_params = merge(
+    warfarin_pkmodel_initial_params,
+    (; pk_Ω = [0.02 0.01; 0.01 0.02]),
+)
+
 fit_corr = fit(
     warfarin_pkmodel_corr,              # The model we defined
     pop_pk,                        # The population data
-    init_params(warfarin_pkmodel_corr),
+    warfarin_pkmodel_corr_initial_params,
     FOCE()                       # Estimation method
 )
 
@@ -348,28 +355,28 @@ warfarin_pkmodel_sex = @model begin
     @param begin
         # Population PK Parameters
         "Clearance (L/h/70 kg)"
-        θCL   ∈ RealDomain(lower = 0.0, init = 0.134)
+        θCL   ∈ RealDomain(lower = 0.0)
         "Central Volume of Distribution (L/70 kg)"
-        θVC   ∈ RealDomain(lower = 0.0, init = 8.11)
+        θVC   ∈ RealDomain(lower = 0.0)
         "Absorption Half-Life (hr)"
-        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        θtabs ∈ RealDomain(lower = 0.0)
         "Absorption Lag Time (hr)"
-        θlag  ∈ RealDomain(lower = 0.0, init = 0.1)
+        θlag  ∈ RealDomain(lower = 0.0)
 
         "Sex effect on CL"
-        SEXonCL  ∈ RealDomain(init = 0.5)  
+        SEXonCL  ∈ RealDomain()  
 
         # Inter-Individual Variability
         "Variance-Covariance for IIV in PK Parameters"
-        pk_Ω     ∈ PDiagDomain([0.09, 0.09])
+        pk_Ω     ∈ PDiagDomain(2)
         "Variance for IIV in Absorption Half-Life"
-        tabs_ω   ∈ RealDomain(lower = 0.0, init = 0.09)
+        tabs_ω   ∈ RealDomain(lower = 0.0)
         
         # Random Unexplained Variability
         "Proportional Error for Concentrations"
-        σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
+        σ_prop   ∈ RealDomain(lower = 0.0)
         "Additive Error for Concentrations (mg/L)"
-        σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
+        σ_add    ∈ RealDomain(lower = 0.0)
     end
 
     # The @random block defines the distribution of individual random effects
@@ -420,10 +427,15 @@ end
 
 # Fit
 # --------------
+warfarin_pkmodel_sex_initial_params = merge(
+    warfarin_pkmodel_initial_params,
+    (; SEXonCL = 0.5),
+)
+
 fit_sex = fit(
     warfarin_pkmodel_sex,              # The model we defined
     pop_pk,                        # The population data
-    init_params(warfarin_pkmodel_sex),
+    warfarin_pkmodel_sex_initial_params,
     FOCE()                       # Estimation method
 )
 

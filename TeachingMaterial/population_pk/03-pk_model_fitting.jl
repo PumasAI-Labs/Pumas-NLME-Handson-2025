@@ -32,22 +32,17 @@ using Pumas, Serialization, Logging, PumasUtilities
 # -----------------------------------------------------------------------------
 # 2. INITIAL PARAMETER ESTIMATES
 # -----------------------------------------------------------------------------
-# Before fitting, we need starting values for all parameters
-# These come from the model's @param block initialization
-# Returns a NamedTuple
-initial_params = init_params(warfarin_pkmodel)
-
-# The initial parameters can also be defined outside the model, as follows: 
-initial_params = (
+# Before fitting, we need starting values for all parameters:
+warfarin_pkmodel_initial_params = (
     θCL = 0.134,
     θVC = 8.11,
     θtabs = 0.523,
     θlag = 0.1,
-    pk_Ω =  Diagonal([0.09, 0.09]),
+    pk_Ω = Diagonal([0.09, 0.09]),
     tabs_ω = 0.09,
     σ_prop = 0.00752,
-    σ_add = 0.0661 
-    )
+    σ_add = 0.0661,
+)
 
 # -----------------------------------------------------------------------------
 # 3. ESTIMATING PARAMETERS
@@ -58,10 +53,10 @@ initial_params = (
 # - Estimates individual random effects
 # - Computes the likelihood
 warfarin_pkmodel_fit = fit(
-    warfarin_pkmodel,              # The model we defined
-    pop_pk,                        # The population data
-    initial_params,                # Starting values
-    FOCE(),                        # Estimation method
+    warfarin_pkmodel,                 # The model we defined
+    pop_pk,                           # The population data
+    warfarin_pkmodel_initial_params,  # Starting values
+    FOCE(),                           # Estimation method
 ) 
 
 # Convergence trace: 
@@ -97,7 +92,7 @@ warfarin_pkmodel_fit = fit(
 warfarin_pkmodel_fit_fix = fit(
     warfarin_pkmodel,
     pop_pk,
-    (; initial_params..., tabs_ω = 0.5), # Replace initial value for tabs_ω by 0.5 
+    merge(warfarin_pkmodel_initial_params, (; tabs_ω = 0.5)), # Replace initial value for tabs_ω by 0.5 
     FOCE(),
     constantcoef = (:tabs_ω,),  # Fix the tabs_ω parameter
 )

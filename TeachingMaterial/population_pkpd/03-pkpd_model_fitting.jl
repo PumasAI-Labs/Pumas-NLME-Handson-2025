@@ -32,10 +32,22 @@ using Pumas, Serialization, Logging, PumasUtilities
 # -----------------------------------------------------------------------------
 # 2. INITIAL PARAMETER ESTIMATES
 # -----------------------------------------------------------------------------
-# Before fitting, we need starting values for all parameters
-# These come from the model's @param block initialization
-# Returns a NamedTuple
-initial_params = init_params(warfarin_model)
+# Before fitting, we need starting values for all parameters:
+warfarin_model_initial_params = (
+    θCL = 0.134,
+    θVC = 8.11,
+    θtabs = 0.523,
+    θlag = 0.1,
+    θBASE = 90.0,
+    θEMAX = 0.1,
+    θEC50 = 2.0,
+    θTHALF = 14.0,
+    pk_Ω = Diagonal([0.09, 0.09]),
+    tabs_ω = 0.09,
+    σ_prop = 0.09,
+    σ_add = 0.09,
+    σ_proppd = 0.09,
+)
 
 # -----------------------------------------------------------------------------
 # 3. ESTIMATING PARAMETERS
@@ -46,10 +58,10 @@ initial_params = init_params(warfarin_model)
 # - Estimates individual random effects
 # - Computes the likelihood
 warfarin_model_fit = fit(
-    warfarin_model,              # The model we defined
+    warfarin_model,                  # The model we defined
     pop_pkpd,                        # The population data
-    initial_params,                # Starting values
-    FOCE(),                        # Estimation method
+    warfarin_model_initial_params,   # Starting values
+    FOCE(),                          # Estimation method
 ) 
 
 # Convergence trace: 

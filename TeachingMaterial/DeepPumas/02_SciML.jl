@@ -492,7 +492,7 @@ model_softplus = @model begin
     CL ∈ RealDomain(; lower=0)
     Vc ∈ RealDomain(; lower=0)
     Ka ∈ RealDomain(; lower=0)
-    R₀ ∈ RealDomain(; lower=0, init=1e3)
+    R₀ ∈ RealDomain(; lower=0)
     σ ∈ RealDomain(; lower=0)
   end
   @init R = R₀
@@ -509,7 +509,7 @@ end
 fpm_softplus = fit(
   model_softplus,
   data_hard_scale,
-  init_params(model_softplus),
+  merge(init_params(model_softplus), (; R₀ = 1e3)),
   MAP(NaivePooled());
 )
 

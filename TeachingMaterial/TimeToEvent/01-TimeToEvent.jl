@@ -298,12 +298,12 @@ tte_exp_model = @model begin
   @param begin
     # Parameters of the Exponential(θ) distribution corresponding to the baseline hazard
     # Rate λ̄ = 1 / θ
-    λ̄ ∈ RealDomain(; lower=0, init=0.001)
+    λ̄ ∈ RealDomain(; lower=0)
     # NB we will denote with λ the final hazard of the model, after the proportional hazard correction
 
     # Parameters of the proportional hazard correction
     # Since we only have one covariate DOSE, we need a single parameter
-    β ∈ RealDomain(; init=0.001)
+    β ∈ RealDomain()
   end
 
   @covariates DOSE
@@ -340,14 +340,14 @@ tte_wei_model = @model begin
   @param begin
     # Parameters of the Weibull(α, θ) distribution corresponding to the baseline hazard
     # Rate λ̄ = 1 / θ where θ is the scale parameter
-    λ̄ ∈ RealDomain(; lower=0, init=0.001)
+    λ̄ ∈ RealDomain(; lower=0)
     # NB we will denote with λ the final hazard of the model, after the proportional hazard correction
     # Shape K = α (to use a name more commonly used in the biomedical modelling community)
-    K ∈ RealDomain(; lower=0, init=0.001)
+    K ∈ RealDomain(; lower=0)
 
     # Parameters of the proportional hazard correction
     # Since we only have one covariate DOSE, we need a single parameter
-    β ∈ RealDomain(; init=0.001)
+    β ∈ RealDomain()
   end
 
   @covariates DOSE
@@ -386,14 +386,14 @@ tte_gomp_model = @model begin
   @param begin
     # Parameters of the Gompertz distribution corresponding to the baseline hazard
     # Rate λ̄
-    λ̄ ∈ RealDomain(; lower=0, init=0.001)
+    λ̄ ∈ RealDomain(; lower=0)
     # NB we will denote with λ the final hazard of the model, after the proportional hazard correction
     # Shape K
-    K ∈ RealDomain(; lower=0, init=0.001)
+    K ∈ RealDomain(; lower=0)
 
     # Parameters of the proportional hazard correction
     # Since we only have one covariate DOSE, we need a single parameter
-    β ∈ RealDomain(; init=0.001)
+    β ∈ RealDomain()
   end
 
   @covariates DOSE
@@ -427,11 +427,11 @@ end
 
 ## Fit the models
 tte_single_exp_fit =
-  fit(tte_exp_model, tte_single_pop, init_params(tte_exp_model), NaivePooled());
+  fit(tte_exp_model, tte_single_pop, (; λ̄ = 0.001, β = 0.001), NaivePooled());
 tte_single_wei_fit =
-  fit(tte_wei_model, tte_single_pop, init_params(tte_wei_model), NaivePooled());
+  fit(tte_wei_model, tte_single_pop, (; λ̄ = 0.001, K = 0.001, β = 0.001), NaivePooled());
 tte_single_gomp_fit =
-  fit(tte_gomp_model, tte_single_pop, init_params(tte_gomp_model), NaivePooled());
+  fit(tte_gomp_model, tte_single_pop, (; λ̄ = 0.001, K = 0.001, β = 0.001), NaivePooled());
 
 ## Compare estimates
 compare_estimates(;
