@@ -19,7 +19,7 @@
 
 
 # Import the previous code that returns the fitted Pumas model
-include("03-pkpd_model_fitting.jl")  # This gives us the fitted model, warfarin_model_fit and the uncertainty
+include(joinpath(@__DIR__, "..", "TeachingMaterial", "population_pkpd", "03-pkpd_model_fitting.jl")) # This gives us the fitted model, warfarin_model_fit and the uncertainty
 
 # -----------------------------------------------------------------------------
 # 1. PACKAGES 
