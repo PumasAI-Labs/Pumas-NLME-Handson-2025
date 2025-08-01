@@ -35,37 +35,37 @@ warfarin_model = @model begin
     @param begin
         # Population PK Parameters
         "Clearance (L/h/70 kg)"
-        θCL   ∈ RealDomain(lower = 0.0, init = 0.134)
+        θCL   ∈ RealDomain(lower = 0.0)
         "Central Volume of Distribution (L/70 kg)"
-        θVC   ∈ RealDomain(lower = 0.0, init = 8.11)
+        θVC   ∈ RealDomain(lower = 0.0)
         "Absorption Half-Life (hr)"
-        θtabs ∈ RealDomain(lower = 0.0, init = 0.523)
+        θtabs ∈ RealDomain(lower = 0.0)
         "Absorption Lag Time (hr)"
-        θlag  ∈ RealDomain(lower = 0.0, init = 0.1)
+        θlag  ∈ RealDomain(lower = 0.0)
 
         # Population PD Parameters
         "Baseline Prothrombin Complex Activity"
-        θBASE ∈ RealDomain(init = 90.0)
+        θBASE ∈ RealDomain()
         "Maximum drug effect"
-        θEMAX ∈ RealDomain(lower = 0.0, upper = 1.0, init = 0.1)
+        θEMAX ∈ RealDomain(lower = 0.0, upper = 1.0)
         "Half-maximal concentration (mg/L)"
-        θEC50 ∈ RealDomain(lower = 0.0, init = 2.0)
+        θEC50 ∈ RealDomain(lower = 0.0)
         "Half-life of turnover (hr)"
-        θTHALF ∈ RealDomain(lower = 0.0, init = 14.0)
+        θTHALF ∈ RealDomain(lower = 0.0)
 
         # Inter-Individual Variability
         "Variance-Covariance for IIV in PK Parameters"
-        pk_Ω     ∈ PDiagDomain([0.09, 0.09])
+        pk_Ω     ∈ PDiagDomain(2)
         "Variance for IIV in Absorption Half-Life"
-        tabs_ω   ∈ RealDomain(lower = 0.0, init = 0.09)
-        
+        tabs_ω   ∈ RealDomain(lower = 0.0)
+
         # Random Unexplained Variability
         "Proportional Error for Concentrations"
-        σ_prop   ∈ RealDomain(lower = 0.0, init = 0.09)
+        σ_prop   ∈ RealDomain(lower = 0.0)
         "Additive Error for Concentrations (mg/L)"
-        σ_add    ∈ RealDomain(lower = 0.0, init = 0.09)
+        σ_add    ∈ RealDomain(lower = 0.0)
         "Proportional Residual Error for PCA"
-        σ_proppd ∈ RealDomain(lower = 0.0, init = 0.09)
+        σ_proppd ∈ RealDomain(lower = 0.0)
     end
 
     # The @random block defines the distribution of individual random effects
