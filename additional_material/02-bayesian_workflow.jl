@@ -95,7 +95,6 @@ Using the No-U-Turn Sampler (NUTS):
 - Multiple chains for convergence assessment
 - Adaptation period for tuning the sampler
 - Burn-in period to discard initial samples
-- Stiff ODE solver (Rodas5P) for numerical stability
 """
 
 @info "Starting Bayesian model fitting..." 
@@ -103,14 +102,13 @@ Using the No-U-Turn Sampler (NUTS):
 
 bayes_fpm = fit(
     bayes_model,
-    pop,
+    pop_pkpd,
     init_params(bayes_model),
     BayesMCMC(
         nsamples = 200,  # Number of posterior samples per chain
         nadapts = 100,   # Number of adaptation steps
         nchains = 4,     # Number of parallel chains
         alg = GeneralizedNUTS(max_depth = 3),  # NUTS algorithm with max tree depth
-        diffeq_options = (; alg = Rodas5P()),  # Stiff ODE solver
     ),
 )
 
@@ -125,25 +123,21 @@ Post-Processing MCMC Results
 """
 
 # Inspect the traces of the chains
-trace_plot(
-    bayes_fpm,
-    linkyaxes = :none,
-)
+trace_plot(bayes_fpm)
 
 # Printing all parameters parameters can be a bit busy
 trace_plot(
-    Chains(bayes_fpm),
-    linkyaxes = :none,
+    bayes_fpm;
     parameters = [:pop_CL, :pop_V, :pop_c50, :pop_e0, :pop_emax, :pop_tabs, :pop_tover]
 )
 
 # Remove burn-in period and get final samples
-bayes_fpm_samples = Pumas.discard(bayes_fpm, burnin = 100)
+bayes_fpm_samples = discard(bayes_fpm; burnin = 100)
 
 # Compare posterior means with maximum likelihood estimates
 @info "Comparing estimates:"
 post_mean = mean(bayes_fpm_samples)
-mle = coef(fpm)
+mle = coef(warfarin_model_fit)
 
 # Calculate relative differences
 rel_diff = Dict(
