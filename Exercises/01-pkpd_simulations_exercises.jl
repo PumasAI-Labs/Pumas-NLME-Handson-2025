@@ -8,7 +8,7 @@ include(joinpath(@__DIR__, "..","TeachingMaterial","population_pkpd","03-pkpd_mo
 # -----------------------------------------------------------------------------
 # 1. PACKAGES 
 # -----------------------------------------------------------------------------
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging, Random
+using Pumas, CairoMakie, Random, PumasUtilities
 
 # -----------------------------------------------------------------------------
 # 2. SETTING SEED FOR RANDOM NUMBER GENERATION

@@ -28,10 +28,9 @@ fig-height: 5
 # Load packages into the environment
 using Pumas
 using AlgebraOfGraphics, CairoMakie
-using DataFrames, DataFramesMeta
+using DataFramesMeta
 using Random
 using PharmaDatasets
-using Chain
 ```
 
 # Analysis Dataset

@@ -1,4 +1,4 @@
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
+using Pumas, CairoMakie, Random, PumasUtilities
 include(joinpath(@__DIR__, "..", "TeachingMaterial", "population_pkpd", "01-read_pumas_pkpd_data.jl"))
 include(joinpath(@__DIR__, "..", "TeachingMaterial", "population_pkpd", "03-pkpd_model_fitting.jl"))
 

@@ -13,7 +13,7 @@ using Pumas
 using PharmaDatasets
 using CSV, ReadStatTables
 using Random, StatsBase
-using DataFrames, DataFramesMeta, Chain
+using DataFramesMeta
 using CategoricalArrays
 using Dates
 using CairoMakie, AlgebraOfGraphics, ColorSchemes, PairPlots
