@@ -1,4 +1,4 @@
-using Pumas, PharmaDatasets, DataFrames, Logging
+using Pumas, PharmaDatasets
 
 @info """
 Exercise 1: Initial Parameter Exploration
