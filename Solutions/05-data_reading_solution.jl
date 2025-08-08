@@ -1,4 +1,4 @@
-using CSV, DataFrames, Logging, PharmaDatasets, Statistics
+using CSV, DataFrames, PharmaDatasets, Statistics
 
 # Exercise 1: Reading and Exploring PK Data
 po_sad = dataset("po_sad_1")

@@ -1,4 +1,4 @@
-using DataFrames, DataFramesMeta, PharmaDatasets, Logging
+using DataFrames, DataFramesMeta, PharmaDatasets
 
 # Exercise 1: Data Wrangling for PO SAD Data
 po_sad = dataset("po_sad_1")

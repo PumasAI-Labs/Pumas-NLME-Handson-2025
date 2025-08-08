@@ -1,4 +1,4 @@
-using DataFrames, DataFramesMeta, PharmaDatasets, Logging
+using DataFrames, DataFramesMeta, PharmaDatasets
 
 @info """
 Exercise 1: Data Wrangling for PO SAD Data

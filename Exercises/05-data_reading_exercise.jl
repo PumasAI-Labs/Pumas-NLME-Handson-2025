@@ -1,4 +1,4 @@
-using CSV, DataFrames, Logging, PharmaDatasets
+using CSV, DataFrames, PharmaDatasets
 
 @info """
 Exercise 1: Reading and Exploring PK Data

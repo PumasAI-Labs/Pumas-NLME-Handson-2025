@@ -1,6 +1,6 @@
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
-include(joinpath("..", "..", "Day1", "01-TeachingMaterial", "01-read_pumas_data.jl"))
-include(joinpath("..", "..", "Day1", "02-TeachingMaterial", "04-pkpd_model_fitting.jl"))
+using Pumas, CairoMakie, Random, PumasUtilities
+include(joinpath(@__DIR__, "..", "TeachingMaterial", "population_pkpd", "01-read_pumas_pkpd_data.jl"))
+include(joinpath(@__DIR__, "..", "TeachingMaterial", "population_pkpd", "03-pkpd_model_fitting.jl"))
 
 @info """
 Bayesian Workflow for Warfarin PK/PD Model

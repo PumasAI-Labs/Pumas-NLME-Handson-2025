@@ -4,7 +4,7 @@
 # https://pmc.ncbi.nlm.nih.gov/articles/PMC4294071/
 # ==============================================================
 
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities
+using Pumas, CairoMakie, Random, PumasUtilities
 
 
 # Model set up

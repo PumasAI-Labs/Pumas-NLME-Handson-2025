@@ -125,7 +125,7 @@ warfarin_model = @model begin
         "Warfarin Concentration (mg/L)"
         conc ~ @. Normal(cp, sqrt((σ_prop * cp)^2 + σ_add^2)) # Combined error model
         "Prothrombin Complex Activity"
-        pca ~ @. Normal(PCA, sqrt((σ_proppd * PCA)^2)) # Combined error model
+        pca ~ @. Normal(PCA, sqrt((σ_proppd * PCA)^2)) # Proportional error model
     end
 end
 
