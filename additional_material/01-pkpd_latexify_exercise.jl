@@ -1,4 +1,4 @@
-using Pumas, Latexify, CairoMakie, Logging
+using Pumas, Latexify, CairoMakie
 
 @info """
 Exercise 1: Two-Compartment Oral Absorption Model
