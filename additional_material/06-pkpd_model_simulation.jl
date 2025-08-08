@@ -24,7 +24,7 @@ include(joinpath(@__DIR__, "..", "TeachingMaterial", "population_pkpd", "03-pkpd
 # -----------------------------------------------------------------------------
 # 1. PACKAGES 
 # -----------------------------------------------------------------------------
-using Pumas, CairoMakie, DataFrames, Random, PumasUtilities, Logging, Random
+using Pumas, CairoMakie, Random, PumasUtilities
 
 # -----------------------------------------------------------------------------
 # 2. SETTING SEED FOR RANDOM NUMBER GENERATION
@@ -58,7 +58,7 @@ sim_plot(
 # Simulate multiple populations
 sims_multi = [simobs(warfarin_model, pop_pkpd, coef(warfarin_model_fit)) for _ in 1:100]
 
-combined_sims = vcat(sims_multi...)  # Combine all simulations into a single Simulated Population
+combined_sims = reduce(vcat, sims_multi)  # Combine all simulations into a single Simulated Population
 
 sim_plot(
     warfarin_model,
@@ -87,27 +87,29 @@ fine_sims = simobs(
 )
 
 # Create and save concentration plot
-fig_conc = Figure(resolution = (800, 600))
-ax_conc = Axis(
-    fig_conc[1, 1],
-    xlabel = "Time (h)",
-    ylabel = "Warfarin Concentration (mg/L)",
-    title = "Simulated Concentration Profiles"
+fig_conc = sim_plot(
+    fine_sims;
+    observations = [:conc],
+    figure = (; size = (800, 600)),
+    axis = (;
+        xlabel = "Time (h)",
+        ylabel = "Warfarin Concentration (mg/L)",
+        title = "Simulated Concentration Profiles",
+    ),
 )
-sim_plot!(ax_conc, fine_sims, observations = [:conc])  # ! indicates that this function modifies its first argument
-fig_conc
 save("simulation_concentration.png", fig_conc)
 
 # Create and save PCA plot
-fig_pca = Figure(resolution = (800, 600))
-ax_pca = Axis(
-    fig_pca[1, 1],
-    xlabel = "Time (h)",
-    ylabel = "PCA",
-    title = "Simulated PCA Profiles"
+fig_pca = sim_plot(
+    fine_sims;
+    observations = [:pca],
+    figure = (; size = (800, 600)),
+    axis = (;
+        xlabel = "Time (h)",
+        ylabel = "PCA",
+        title = "Simulated PCA Profiles",
+    ),
 )
-sim_plot!(ax_pca, fine_sims, observations = [:pca])
-fig_pca
 save("simulation_pca.png", fig_pca)
 
 
@@ -117,14 +119,13 @@ save("simulation_pca.png", fig_pca)
 
 # Use bootstrap results to incorporate parameter uncertainty
 # Set random seed for reproducibility
-rng = Pumas.default_rng()
-Random.seed!(rng, 123)
+Random.seed!(123)
 
 # Simulate using bootstrap results
 sims_uncertain = simobs(warfarin_model_varcov, pop_pkpd, samples = 1000, simulate_error = false)
 
 # Create VPC from uncertainty simulations
-vpc_uncertain_conc = vpc(sims_uncertain; observations = [:conc], ensemblealg = EnsembleThreads())
+vpc_uncertain_conc = vpc(sims_uncertain; observations = [:conc])
 fig_vpc_conc = vpc_plot(
     vpc_uncertain_conc;
     axis = (xlabel = "Time (h)", 
@@ -140,7 +141,7 @@ fig_vpc_conc = vpc_plot(
 )
 save("vpc_with_uncertainty.png", fig_vpc_conc)
 
-vpc_uncertain_pca = vpc(sims_uncertain; observations = [:pca], ensemblealg = EnsembleThreads())
+vpc_uncertain_pca = vpc(sims_uncertain; observations = [:pca])
 fig_vpc_pca = vpc_plot(
     vpc_uncertain_pca;
     axis = (xlabel = "Time (h)", 
@@ -213,28 +214,34 @@ function basic_simulation(fpm)
     
     # Sample random effects from their priors
     @info "Simulating with random effects from priors..."
-    sims1 = simobs(fpm)
+    sims1 = simobs(fpm.model, fpm.data, coef(fpm))
     
     # Plot the simulations
-    fig = Figure(resolution = (1200, 600))
+    fig = Figure(size = (1200, 600))
     
     # Concentration plot
-    ax1 = Axis(
+    sim_plot(
         fig[1, 1],
-        xlabel = "Time (h)",
-        ylabel = "Concentration (mg/L)",
-        title = "Simulated Concentration"
+        sims1;
+        observations = [:conc],
+        axis = (;
+            xlabel = "Time (h)",
+            ylabel = "Concentration (mg/L)",
+            title = "Simulated Concentration",
+        ),
     )
-    sim_plot!(ax1, sims1, observations = [:conc])
     
     # PCA plot
-    ax2 = Axis(
+    sim_plot(
         fig[1, 2],
-        xlabel = "Time (h)",
-        ylabel = "PCA",
-        title = "Simulated PCA"
+        sims1;
+        observations = [:pca],
+        axis = (;
+            xlabel = "Time (h)",
+            ylabel = "PCA",
+            title = "Simulated PCA",
+        ),
     )
-    sim_plot!(ax2, sims1, observations = [:pca])
     
     save("basic_simulation.png", fig)
 end
@@ -245,32 +252,37 @@ function multiple_population_simulation(fpm; n_pop=100)
     
     # Simulate multiple populations
     @info "Simulating populations..." n_populations=n_pop
-    sims = [simobs(fpm) for _ in 1:n_pop]
+    sims = [simobs(fpm.model, fpm.data, coef(fpm)) for _ in 1:n_pop]
     
     # Plot all simulations
-    fig = Figure(resolution = (1200, 600))
+    allsims = reduce(vcat, sims)  # Combine all simulations
+    fig = Figure(size = (1200, 600))
     
     # Concentration plot
-    ax1 = Axis(
+    sim_plot(
         fig[1, 1],
-        xlabel = "Time (h)",
-        ylabel = "Concentration (mg/L)",
-        title = "Multiple Population Simulations - Concentration"
+        allsims;
+        observations = [:conc],
+        color = (:blue, 0.1),
+        axis = (;
+            xlabel = "Time (h)",
+            ylabel = "Concentration (mg/L)",
+            title = "Multiple Population Simulations - Concentration",
+        ),
     )
-    for sim in sims
-        sim_plot!(ax1, sim, observations = [:conc], color = (:blue, 0.1))
-    end
     
     # PCA plot
-    ax2 = Axis(
+    sim_plot(
         fig[1, 2],
-        xlabel = "Time (h)",
-        ylabel = "PCA",
-        title = "Multiple Population Simulations - PCA"
+        allsims;
+        observations = [:pca],
+        color = (:red, 0.1),
+        axis = (;
+            xlabel = "Time (h)",
+            ylabel = "PCA",
+            title = "Multiple Population Simulations - PCA",
+        ),
     )
-    for sim in sims
-        sim_plot!(ax2, sim, observations = [:pca], color = (:red, 0.1))
-    end
     
     save("multiple_simulations.png", fig)
     
@@ -283,30 +295,38 @@ function fine_grid_simulation(fpm)
     
     # Simulate with fine time grid
     @info "Simulating with fine time grid..."
-    fine_sims = simobs(fpm, obstimes = 0.0:0.5:150.0)
+    fine_sims = simobs(fpm.model, fpm.data, coef(fpm); obstimes = 0.0:0.5:150.0)
     
     # Plot the fine grid simulations
-    fig = Figure(resolution = (1200, 600))
+    fig = Figure(size = (1200, 600))
     
     # Concentration plot
-    ax1 = Axis(
+    sim_plot(
         fig[1, 1],
-        xlabel = "Time (h)",
-        ylabel = "Concentration (mg/L)",
-        title = "Fine Grid Simulation - Concentration"
+        fine_sims;
+        observations = [:conc],
+        axis = (;
+            xlabel = "Time (h)",
+            ylabel = "Concentration (mg/L)",
+            title = "Fine Grid Simulation - Concentration",
+        ),
     )
-    sim_plot!(ax1, fine_sims, observations = [:conc])
     
     # PCA plot
-    ax2 = Axis(
+    sim_plot(
         fig[1, 2],
-        xlabel = "Time (h)",
-        ylabel = "PCA",
-        title = "Fine Grid Simulation - PCA"
+        fine_sims;
+        observations = [:pca],
+        axis = (;
+            xlabel = "Time (h)",
+            ylabel = "PCA",
+            title = "Fine Grid Simulation - PCA",
+        ),
     )
-    sim_plot!(ax2, fine_sims, observations = [:pca])
     
     save("fine_grid_simulation.png", fig)
+
+    return fig
 end
 
 function post_process_simulations(sims)
@@ -316,55 +336,40 @@ function post_process_simulations(sims)
     # Calculate PK/PD parameters from simulations
     @info "Calculating AUC and Cmax..."
     nca_params = postprocess(reduce(vcat, sims)) do gen, obs
-        pk_auc = NCA.auc(gen.conc, gen.time)
-        pk_cmax = NCA.cmax(gen.conc, gen.time)
-        pd_auc = NCA.auc(gen.pca, gen.time)
-        pd_cmax = NCA.cmax(gen.pca, gen.time)
-        (; pk_auc, pk_cmax, pd_auc, pd_cmax)
+        PK_AUC = NCA.auc(gen.conc, gen.t)
+        PK_Cmax = NCA.cmax(gen.conc, gen.t)
+        PD_AUC = NCA.auc(gen.pca, gen.t)
+        PD_Cmax = NCA.cmax(gen.pca, gen.t)
+        (; PK_AUC, PK_Cmax, PD_AUC, PD_Cmax)
     end
     
     # Calculate probability of being in therapeutic range
     prob = mean(nca_params) do p
-        !ismissing(p.pk_auc) && 500.0 < p.pk_auc < 1000.0 && p.pk_cmax <= 15
+        !ismissing(p.PK_AUC) && 500.0 < p.PK_AUC < 1000.0 && p.PK_Cmax <= 15
     end
     @info "Therapeutic success probability" probability=prob
-    
+
+    # Convert to DataFrame for easier handling
+    nca_params_df = @chain DataFrame(nca_params) begin
+        # Convert to long format
+        stack
+        # Drop missing values
+        dropmissing(_, :value)
+        # Split variable into observation and NCA type
+        @rtransform @astable begin
+            obs_nca = split(:variable, "_"; limit = 2)
+            :obs = obs_nca[1]
+            :nca = obs_nca[2]
+        end
+    end
+
     # Plot distributions
-    fig = Figure(resolution = (1200, 800))
-    
-    # AUC distributions
-    ax1 = Axis(
-        fig[1, 1],
-        xlabel = "AUC",
-        ylabel = "Count",
-        title = "PK AUC Distribution"
-    )
-    hist!(ax1, filter(!ismissing, getproperty.(nca_params, :pk_auc)))
-    
-    ax2 = Axis(
-        fig[1, 2],
-        xlabel = "AUC",
-        ylabel = "Count",
-        title = "PD AUC Distribution"
-    )
-    hist!(ax2, filter(!ismissing, getproperty.(nca_params, :pd_auc)))
-    
-    # Cmax distributions
-    ax3 = Axis(
-        fig[2, 1],
-        xlabel = "Cmax",
-        ylabel = "Count",
-        title = "PK Cmax Distribution"
-    )
-    hist!(ax3, filter(!ismissing, getproperty.(nca_params, :pk_cmax)))
-    
-    ax4 = Axis(
-        fig[2, 2],
-        xlabel = "Cmax",
-        ylabel = "Count",
-        title = "PD Cmax Distribution"
-    )
-    hist!(ax4, filter(!ismissing, getproperty.(nca_params, :pd_cmax)))
+    specs = data(nca_params_df) * 
+        mapping(:value, row = :nca, col = :obs => sorter(["PK", "PD"])) *
+        histogram(bins=15, datalimits=extrema)
+    fig = draw(specs; figure = (; size = (1200, 800)), facet = (; linkxaxes = :none))
     
     save("derived_parameters.png", fig)
+
+    return fig
 end
